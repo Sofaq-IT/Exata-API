@@ -42,11 +42,14 @@ await using var dbContext = scope.ServiceProvider.GetRequiredService<ApiContext>
 await dbContext.Database.MigrateAsync();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthorization();
 
