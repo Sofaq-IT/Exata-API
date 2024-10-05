@@ -1,0 +1,6 @@
+@Exata.API_HostAddress = http://localhost:5171
+
+GET {{Exata.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
