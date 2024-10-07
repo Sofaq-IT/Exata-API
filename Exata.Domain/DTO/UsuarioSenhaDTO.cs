@@ -5,7 +5,7 @@ namespace Exata.Domain.DTO;
 public class UsuarioSenhaDTO
 {
     [Required]
-    public int UsuarioID { get; set; }
+    public string Login { get; set; }
 
     public string SenhaAntiga { get; set; }
 

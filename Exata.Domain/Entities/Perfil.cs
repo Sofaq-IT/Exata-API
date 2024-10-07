@@ -20,7 +20,11 @@ public class Perfil() : Base()
     public bool Ativo { get; set; }
 
     [JsonIgnore]
-    public List<Usuario> Usuarios { get; set; }
+    public List<ApplicationUser> Users { get; set; }
+        
+    public List<PerfilControllerAction> PerfilControllerAction { get; set; }
 
-    public List<PerfilSecao> PerfilSecao { get; set; }
+    public virtual ApplicationUser UsuarioPerfilCriacao { get; set; }
+
+    public virtual ApplicationUser UsuarioPerfilAlteracao { get; set; }
 }

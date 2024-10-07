@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using Exata.Domain.DTO;
 using Exata.Domain.Entities;
 using Exata.Domain.Interfaces;
-using Exata.Helpers;
+using Exata.Domain.Paginacao;
 using Exata.Repository.Context;
 
 namespace Exata.Repository.Repositories;
@@ -13,96 +14,50 @@ namespace Exata.Repository.Repositories;
 public class UsuarioRepository : IUsuario
 {
     private readonly ApiContext _ctx;
+    private readonly IHttpContextAccessor _httpContext;
     private readonly ICampo _campo;
 
-    public UsuarioRepository(ApiContext context, ICampo campo)
+    public UsuarioRepository(ApiContext context,
+                             IHttpContextAccessor httpContextAccessor,
+                             ICampo campo)
     {
         _ctx = context;
+        _httpContext = httpContextAccessor;
         _campo = campo;
     }
 
-    public async Task Inserir(Usuario usuario)
+    public async Task<ApplicationUser> Abrir(string id)
     {
-        usuario.booNovo = true;
-        _ctx.Add(usuario);
-        await _ctx.SaveChangesAsync();
-    }
-
-    public async Task Atualizar(Usuario usuario)
-    {
-        usuario.booNovo = false;
-        var update = _ctx.Entry(usuario);
-        update.State = EntityState.Modified;
-        update.Property("Senha").IsModified = false;
-        update.Property("DataCadastro").IsModified = false;
-        update.Property("UserCadastro").IsModified = false;
-        await _ctx.SaveChangesAsync();
-    }
-
-    public async Task Excluir(int id)
-    {
-        Usuario usuario = await _ctx.Usuario.Where(x => x.UsuarioID == id).FirstOrDefaultAsync();
-        _ctx.Usuario.Remove(usuario);
-        await _ctx.SaveChangesAsync();
-    }
-
-    public async Task<Usuario> Abrir(int id)
-    {
-        return await _ctx.Usuario
+        return await _ctx.Users
             .AsNoTracking()
-            .Include("Perfil")
-            .Where(x => x.UsuarioID == id)
+            .Include(x => x.Perfil)
+            .Include(x => x.UsuarioAvatar)
+            .Where(x => x.Id == id)
             .FirstOrDefaultAsync();
     }
 
-    public bool Existe(int id)
-    {
-        return _ctx.Usuario.Any(x => x.UsuarioID == id);
-    }
-
-    public async Task AlterarSenha(Usuario usuario)
-    {
-        usuario.booNovo = false;
-        var update = _ctx.Entry(usuario);
-        update.State = EntityState.Unchanged;
-        update.Property("Senha").IsModified = true;
-        update.Property("DataAlteracao").IsModified = true;
-        update.Property("UserAlteracao").IsModified = true;
-        await _ctx.SaveChangesAsync();
-    }
-
-    public async Task AlterarSenhaADM(Usuario usuario)
-    {
-        usuario.booNovo = false;
-        var update = _ctx.Entry(usuario);
-        update.State = EntityState.Unchanged;
-        update.Property("Senha").IsModified = true;
-        update.Property("DataAlteracao").IsModified = true;
-        update.Property("UserAlteracao").IsModified = true;
-        await _ctx.SaveChangesAsync();
-    }
-
-    public async Task<PagedList<Usuario>> Listar(PaginacaoDTO paginacao)
+    public async Task<PagedList<ApplicationUser>> Listar(PaginacaoDTO paginacao, string idAdm)
     {
         string tabela = "Usuario";
-        PagedList<Usuario> usuarios = null;
+        PagedList<ApplicationUser> usuarios = null;
 
-        IQueryable<Usuario> iUsuarios = _ctx.Usuario
+        IQueryable<ApplicationUser> iUsuarios = _ctx.Users
             .AsNoTracking()
-            .Include(x => x.Perfil);
+            .Include(x => x.Perfil)
+            .Where(x => x.UserName != idAdm);
 
         if (paginacao.Ativos != null)
             iUsuarios = iUsuarios.Where(x => x.Ativo == paginacao.Ativos);
-
+        
         if (!string.IsNullOrEmpty(paginacao.PesquisarCampo) && !string.IsNullOrEmpty(paginacao.PesquisarValor))
         {
             if (!_campo.ExistePesquisa(tabela, paginacao.PesquisarCampo))
-                throw new Exception("Campo não pode ser pesquisado!");
+                throw new Exception($"Campo ({paginacao.PesquisarCampo}) não pode ser pesquisado!");
 
             switch (paginacao.PesquisarCampo)
             {
-                case "Login":
-                    iUsuarios = iUsuarios.Where(x => x.Login.Contains(paginacao.PesquisarValor));
+                case "UserName":
+                    iUsuarios = iUsuarios.Where(x => x.UserName.Contains(paginacao.PesquisarValor));
                     break;
 
                 case "Nome":
@@ -116,13 +71,16 @@ public class UsuarioRepository : IUsuario
                 case "Perfil":
                     iUsuarios = iUsuarios.Where(x => x.Perfil.Descricao.Contains(paginacao.PesquisarValor));
                     break;
+
+                default:
+                    throw new Exception($"Campo ({paginacao.PesquisarCampo}) não pode ser pesquisado!");
             }
         }
-        
+
         if (!string.IsNullOrEmpty(paginacao.OrderCampo))
         {
             if (!_campo.ExisteOrdenacao(tabela, paginacao.OrderCampo))
-                throw new Exception("Campo não pode ser Ordenado!");
+                throw new Exception($"Campo ({paginacao.OrderCampo}) não pode ser Ordenado!");
 
             if (paginacao.OrderTipoAsc == true)
                 iUsuarios = iUsuarios.OrderBy(x => EF.Property<object>(x!, paginacao.OrderCampo));
@@ -130,12 +88,59 @@ public class UsuarioRepository : IUsuario
                 iUsuarios = iUsuarios.OrderByDescending(x => EF.Property<object>(x!, paginacao.OrderCampo));
         }
 
-        usuarios = await PagedList<Usuario>
+        usuarios = await PagedList<ApplicationUser>
            .ToPagedList(
                 iUsuarios,
                 paginacao.Pagina,
                 paginacao.RegistroPorPagina);
 
         return usuarios;
+    }
+
+    public async Task<string> UserID()
+    {
+        string sUserName = _httpContext.HttpContext.User.Identity.Name;
+
+        if (string.IsNullOrEmpty(sUserName))
+            return null;
+
+        return await _ctx.Users
+            .AsNoTracking()
+            .Where(x => x.UserName == sUserName)
+            .Select(x => x.Id)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<int> QtdeAtivos(string idAdm)
+    {
+        return await _ctx.Users
+            .AsNoTracking()
+            .CountAsync(x => x.Ativo == true &&
+                        x.UserName != idAdm);
+    }
+
+    public async Task<UsuarioAvatar> InserirAvatar(UsuarioAvatar usuarioAvatar)
+    {
+        await _ctx.AddAsync(usuarioAvatar);
+        return usuarioAvatar;
+    }
+
+    public UsuarioAvatar AlterarAvatar(UsuarioAvatar usuarioAvatar)
+    {
+        _ctx.Update(usuarioAvatar);
+        return usuarioAvatar;
+    }
+
+    public bool ExisteAvatar(string id)
+    {
+        return _ctx.UsuarioAvatar.Any(x => x.UsuarioID == id);
+    }
+
+    public async Task<string> Avatar(string id)
+    {
+        return await _ctx.UsuarioAvatar
+            .Where(x => x.UsuarioID == id)
+            .Select(x => x.Avatar)
+            .FirstOrDefaultAsync();
     }
 }

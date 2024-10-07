@@ -22,6 +22,234 @@ namespace Exata.Repository.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Exata.Domain.Entities.ApplicationUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DataAlteracao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCadastro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataUltLogin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Nome")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("PerfilID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Tema")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("PerfilID");
+
+                    b.ToTable("AspNetUsers", (string)null);
+                });
+
             modelBuilder.Entity("Exata.Domain.Entities.Campo", b =>
                 {
                     b.Property<string>("TabelaID")
@@ -48,51 +276,110 @@ namespace Exata.Repository.Migrations
                     b.ToTable("Campo", (string)null);
                 });
 
-            modelBuilder.Entity("Exata.Domain.Entities.Contato", b =>
+            modelBuilder.Entity("Exata.Domain.Entities.Contratante", b =>
                 {
-                    b.Property<string>("TelefoneID")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("bit");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("DataAlteracao")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Bairro")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
-                    b.Property<DateTime>("DataCadastro")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Cidade")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
-                    b.Property<string>("Nome")
-                        .IsRequired()
+                    b.Property<string>("Complemento")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Estado")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("Logo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Numero")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Rua")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Contratante");
+                });
+
+            modelBuilder.Entity("Exata.Domain.Entities.ControllerAction", b =>
+                {
+                    b.Property<string>("Controller")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Metodo")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Action")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("ControllerActionID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ControllerActionID"));
+
+                    b.Property<string>("Descricao")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int?>("UserAlteracao")
-                        .HasColumnType("int");
+                    b.HasKey("Controller", "Metodo", "Action");
 
-                    b.Property<int?>("UserCadastro")
-                        .HasColumnType("int");
-
-                    b.HasKey("TelefoneID");
-
-                    b.ToTable("Contato");
+                    b.ToTable("ControllerAction", (string)null);
                 });
 
-            modelBuilder.Entity("Exata.Domain.Entities.ContatoTipo", b =>
+            modelBuilder.Entity("Exata.Domain.Entities.LogRequisicao", b =>
                 {
-                    b.Property<string>("TelefoneID")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<DateTime>("Data")
+                        .HasColumnType("datetime2");
 
-                    b.Property<int>("TipoContatoID")
-                        .HasColumnType("int");
+                    b.Property<string>("UsuarioID")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("TelefoneID", "TipoContatoID");
+                    b.Property<string>("Metodo")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
-                    b.HasIndex("TipoContatoID");
+                    b.Property<string>("Controller")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.ToTable("ContatoTipo", (string)null);
+                    b.Property<string>("Action")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Body")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RemoteAddress")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TraceID")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Data", "UsuarioID", "Metodo", "Controller", "Action");
+
+                    b.ToTable("LogRequisicoes", (string)null);
                 });
 
             modelBuilder.Entity("Exata.Domain.Entities.Perfil", b =>
@@ -117,283 +404,168 @@ namespace Exata.Repository.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int?>("UserAlteracao")
-                        .HasColumnType("int");
+                    b.Property<string>("UserAlteracao")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("UserCadastro")
-                        .HasColumnType("int");
+                    b.Property<string>("UserCadastro")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("PerfilID");
+
+                    b.HasIndex("UserAlteracao");
+
+                    b.HasIndex("UserCadastro");
 
                     b.ToTable("Perfil");
                 });
 
-            modelBuilder.Entity("Exata.Domain.Entities.PerfilSecao", b =>
+            modelBuilder.Entity("Exata.Domain.Entities.PerfilControllerAction", b =>
                 {
+                    b.Property<int>("ControllerActionID")
+                        .HasColumnType("int");
+
                     b.Property<int>("PerfilID")
                         .HasColumnType("int");
 
-                    b.Property<int>("SecaoID")
-                        .HasColumnType("int");
-
-                    b.HasKey("PerfilID", "SecaoID");
-
-                    b.HasIndex("SecaoID");
-
-                    b.ToTable("PerfilSecao", (string)null);
-                });
-
-            modelBuilder.Entity("Exata.Domain.Entities.Secao", b =>
-                {
-                    b.Property<int>("SecaoID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SecaoID"));
-
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("DataAlteracao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DataCadastro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Descricao")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("TelefoneID")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("UserAlteracao")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("UserCadastro")
-                        .HasColumnType("int");
-
-                    b.HasKey("SecaoID");
-
-                    b.HasIndex("TelefoneID");
-
-                    b.ToTable("Secao");
-                });
-
-            modelBuilder.Entity("Exata.Domain.Entities.Telefones", b =>
-                {
-                    b.Property<int>("TelefoneID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TelefoneID"));
-
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("DataAlteracao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DataCadastro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Descricao")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Telefone")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<int?>("UserAlteracao")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("UserCadastro")
-                        .HasColumnType("int");
-
-                    b.HasKey("TelefoneID");
-
-                    b.HasIndex("Telefone")
-                        .IsUnique();
-
-                    b.ToTable("Telefone");
-                });
-
-            modelBuilder.Entity("Exata.Domain.Entities.TipoContato", b =>
-                {
-                    b.Property<int>("TipoContatoID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TipoContatoID"));
-
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("DataAlteracao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DataCadastro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Descricao")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int?>("UserAlteracao")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("UserCadastro")
-                        .HasColumnType("int");
-
-                    b.HasKey("TipoContatoID");
-
-                    b.ToTable("TipoContato");
-                });
-
-            modelBuilder.Entity("Exata.Domain.Entities.Usuario", b =>
-                {
-                    b.Property<int>("UsuarioID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UsuarioID"));
-
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("DataAlteracao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DataCadastro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("Login")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int?>("PerfilID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Senha")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int?>("UserAlteracao")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("UserCadastro")
-                        .HasColumnType("int");
-
-                    b.HasKey("UsuarioID");
-
-                    b.HasIndex("Login")
-                        .IsUnique();
+                    b.HasKey("ControllerActionID", "PerfilID");
 
                     b.HasIndex("PerfilID");
 
-                    b.ToTable("Usuario");
+                    b.ToTable("PerfilControllerAction", (string)null);
                 });
 
-            modelBuilder.Entity("Exata.Domain.Entities.ContatoTipo", b =>
+            modelBuilder.Entity("Exata.Domain.Entities.UsuarioAvatar", b =>
                 {
-                    b.HasOne("Exata.Domain.Entities.Contato", "Contato")
-                        .WithMany("ContatoTipo")
-                        .HasForeignKey("TelefoneID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<string>("UsuarioID")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasOne("Exata.Domain.Entities.TipoContato", "TipoContato")
-                        .WithMany("ContatoTipo")
-                        .HasForeignKey("TipoContatoID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<string>("Avatar")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Navigation("Contato");
+                    b.HasKey("UsuarioID");
 
-                    b.Navigation("TipoContato");
+                    b.ToTable("UsuarioAvatar");
                 });
 
-            modelBuilder.Entity("Exata.Domain.Entities.PerfilSecao", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("Exata.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("Exata.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .IsRequired();
+
+                    b.HasOne("Exata.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("Exata.Domain.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Exata.Domain.Entities.ApplicationUser", b =>
                 {
                     b.HasOne("Exata.Domain.Entities.Perfil", "Perfil")
-                        .WithMany("PerfilSecao")
-                        .HasForeignKey("PerfilID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Exata.Domain.Entities.Secao", "Secao")
-                        .WithMany("PerfilSecao")
-                        .HasForeignKey("SecaoID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Perfil");
-
-                    b.Navigation("Secao");
-                });
-
-            modelBuilder.Entity("Exata.Domain.Entities.Secao", b =>
-                {
-                    b.HasOne("Exata.Domain.Entities.Telefones", "Telefone")
-                        .WithMany("Secao")
-                        .HasForeignKey("TelefoneID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Telefone");
-                });
-
-            modelBuilder.Entity("Exata.Domain.Entities.Usuario", b =>
-                {
-                    b.HasOne("Exata.Domain.Entities.Perfil", "Perfil")
-                        .WithMany("Usuarios")
+                        .WithMany("Users")
                         .HasForeignKey("PerfilID");
 
                     b.Navigation("Perfil");
                 });
 
-            modelBuilder.Entity("Exata.Domain.Entities.Contato", b =>
+            modelBuilder.Entity("Exata.Domain.Entities.Perfil", b =>
                 {
-                    b.Navigation("ContatoTipo");
+                    b.HasOne("Exata.Domain.Entities.ApplicationUser", "UsuarioPerfilAlteracao")
+                        .WithMany("PerfilAlteracao")
+                        .HasForeignKey("UserAlteracao");
+
+                    b.HasOne("Exata.Domain.Entities.ApplicationUser", "UsuarioPerfilCriacao")
+                        .WithMany("PerfilCriacao")
+                        .HasForeignKey("UserCadastro");
+
+                    b.Navigation("UsuarioPerfilAlteracao");
+
+                    b.Navigation("UsuarioPerfilCriacao");
+                });
+
+            modelBuilder.Entity("Exata.Domain.Entities.PerfilControllerAction", b =>
+                {
+                    b.HasOne("Exata.Domain.Entities.ControllerAction", "ControllerAction")
+                        .WithMany("PerfilControllerAction")
+                        .HasForeignKey("ControllerActionID")
+                        .HasPrincipalKey("ControllerActionID")
+                        .IsRequired();
+
+                    b.HasOne("Exata.Domain.Entities.Perfil", "Perfil")
+                        .WithMany("PerfilControllerAction")
+                        .HasForeignKey("PerfilID")
+                        .IsRequired();
+
+                    b.Navigation("ControllerAction");
+
+                    b.Navigation("Perfil");
+                });
+
+            modelBuilder.Entity("Exata.Domain.Entities.UsuarioAvatar", b =>
+                {
+                    b.HasOne("Exata.Domain.Entities.ApplicationUser", "Usuario")
+                        .WithOne("UsuarioAvatar")
+                        .HasForeignKey("Exata.Domain.Entities.UsuarioAvatar", "UsuarioID")
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Exata.Domain.Entities.ApplicationUser", b =>
+                {
+                    b.Navigation("PerfilAlteracao");
+
+                    b.Navigation("PerfilCriacao");
+
+                    b.Navigation("UsuarioAvatar");
+                });
+
+            modelBuilder.Entity("Exata.Domain.Entities.ControllerAction", b =>
+                {
+                    b.Navigation("PerfilControllerAction");
                 });
 
             modelBuilder.Entity("Exata.Domain.Entities.Perfil", b =>
                 {
-                    b.Navigation("PerfilSecao");
+                    b.Navigation("PerfilControllerAction");
 
-                    b.Navigation("Usuarios");
-                });
-
-            modelBuilder.Entity("Exata.Domain.Entities.Secao", b =>
-                {
-                    b.Navigation("PerfilSecao");
-                });
-
-            modelBuilder.Entity("Exata.Domain.Entities.Telefones", b =>
-                {
-                    b.Navigation("Secao");
-                });
-
-            modelBuilder.Entity("Exata.Domain.Entities.TipoContato", b =>
-                {
-                    b.Navigation("ContatoTipo");
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

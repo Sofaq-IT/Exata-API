@@ -1,74 +1,70 @@
-﻿using Microsoft.AspNetCore.Http.Json;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-using Exata.Domain.DTO;
 using Exata.Domain.Entities;
 using Exata.Domain.Interfaces;
-using Exata.Helpers;
+using Exata.Domain.Paginacao;
+using Exata.Helpers.Interfaces;
 
 namespace Exata.API.Controllers;
 
+/// <summary>
+/// Controller utilizado para manter dados do Perfil
+/// </summary>
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class PerfilController : ControllerBase
 {
-    private readonly IPerfil _perfil;
-    private readonly IPerfilSecao _perfilSecao;
-    private readonly ISecao _secao;
-    private readonly ICampo _campo;
-    private readonly JsonSerializerOptions _jsonOptions;
+    private readonly IUnitOfWork _uof;
+    private readonly IErrorRequest _error;
+    private readonly IFuncoes _funcoes;
 
-    public PerfilController(IPerfil perfil, IPerfilSecao perfilSecao, ISecao secao, ICampo campo)
+    /// <summary>
+    /// Controller utilizado para manter dados do Perfil
+    /// </summary>
+    /// <param name="uof"></param>
+    /// <param name="erro"></param>
+    /// <param name="funcoes"></param>
+    public PerfilController(IUnitOfWork uof,
+                            IErrorRequest erro,
+                            IFuncoes funcoes)
     {
-        _perfil = perfil;
-        _perfilSecao = perfilSecao;
-        _secao = secao;
-        _campo = campo;
-        _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        _uof = uof;
+        _error = erro;
+        _error.Titulo = "Perfil";
+        _funcoes = funcoes;
     }
 
     /// <summary>
-    /// Inclui o Perfil
+    /// Inclui o Perfil que será vinculado ao usuário
     /// </summary>
-    /// <param name="Perfil">Objeto Perfil</param>
+    /// <param name="perfil">Objeto Perfil</param>
     /// <returns>O objeto inserido</returns>
     [HttpPost]
     public async Task<ActionResult<Perfil>> Post([FromBody] Perfil perfil)
     {
-        try
-        {
-            if (_perfil.Existe(perfil.PerfilID) == true)
-                throw new Exception("Perfil já cadastrado.");
+        if (_uof.Perfil.Existe(perfil.PerfilID) == true)
+            return BadRequest(_error.BadRequest("Perfil já cadastrado."));
 
-            await _perfil.Inserir(perfil);
-            return Ok(perfil);
-        }
-        catch (System.Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        Perfil perfilNovo = await _uof.Perfil.Inserir(perfil);
+        await _uof.Commit();
+        return Ok(perfilNovo);
     }
 
     /// <summary>
     /// Alterar o Perfil
     /// </summary>
-    /// <param name="Perfil">Objeto Perfil</param>
+    /// <param name="perfil">Objeto Perfil</param>
     /// <returns>O objeto alterado.</returns>
     [HttpPut]
     public async Task<ActionResult<Perfil>> Put([FromBody] Perfil perfil)
     {
-        try
-        {
-            if (_perfil.Existe(perfil.PerfilID) == false)
-                return NotFound();
+        if (_uof.Perfil.Existe(perfil.PerfilID) == false)
+            return NotFound(_error.NotFound());
 
-            await _perfil.Atualizar(perfil);
-            return Ok(perfil);
-        }
-        catch (System.Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        Perfil perfilAlterado = await _uof.Perfil.Atualizar(perfil);
+        await _uof.Commit();
+        return Ok(perfilAlterado);
     }
 
     /// <summary>
@@ -79,18 +75,12 @@ public class PerfilController : ControllerBase
     [HttpDelete()]
     public async Task<ActionResult> Delete(int id)
     {
-        try
-        {
-            if (_perfil.Existe(id) == false)
-                return NotFound();
+        if (_uof.Perfil.Existe(id) == false)
+            return NotFound(_error.NotFound());
 
-            await _perfil.Excluir(id);
-            return Ok();
-        }
-        catch (System.Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        Perfil perfilExcluido = await _uof.Perfil.Excluir(id);
+        await _uof.Commit();
+        return Ok(perfilExcluido);
     }
 
     /// <summary>
@@ -101,17 +91,11 @@ public class PerfilController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<Perfil>> Get(int id)
     {
-        try
-        {
-            if (_perfil.Existe(id) == false)
-                return NotFound();
+        if (_uof.Perfil.Existe(id) == false)
+            return NotFound(_error.NotFound());
 
-            return Ok(await _perfil.Abrir(id));
-        }
-        catch (System.Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        await _uof.Commit();
+        return Ok(await _uof.Perfil.Abrir(id));
     }
 
     /// <summary>
@@ -121,123 +105,91 @@ public class PerfilController : ControllerBase
     [HttpGet, Route("Listar")]
     public async Task<IActionResult> Listar()
     {
-        try
+        if (!_funcoes.ValidacaoHeaderPaginacao(Request.Headers))
         {
-            PaginacaoDTO _paginacao = null;
-
-            if (Request.Headers.TryGetValue("x-Paginacao", out var hPaginacao))
-            {
-                _paginacao = JsonSerializer.Deserialize<PaginacaoDTO>(hPaginacao, _jsonOptions);
-                if (!TryValidateModel(_paginacao))
-                    return BadRequest(ModelState);
-            }
-            else
-            {
-                ModelState.AddModelError("Pagina",
-                            "Header x-Paginacao não informado.");
-                return BadRequest(ModelState);
-            }
-
-            PagedList<Perfil> perfis = await _perfil.Listar(_paginacao);
-
-            if (perfis.TotalPaginas == 0)
-                return NotFound();
-
-            if (_paginacao.Pagina > perfis.TotalPaginas)
-            {
-                _paginacao.Pagina = perfis.TotalPaginas;
-                perfis = await _perfil.Listar(_paginacao);
-            }
-
-            Response.Headers.Append("x-Paginacao", perfis.JsonHeaderPaginacao());
-            return Ok(perfis);
+            return BadRequest(_error.BadRequest(_funcoes.errors));
         }
-        catch (System.Exception ex)
+
+        PagedList<Perfil> perfis = await _uof.Perfil.Listar(_funcoes.Paginacao);
+
+        if (perfis.TotalPaginas == 0)
+            return NotFound(_error.NotFound());
+
+        if (_funcoes.Paginacao.Pagina > perfis.TotalPaginas)
         {
-            return BadRequest(ex.Message);
+            _funcoes.Paginacao.Pagina = perfis.TotalPaginas;
+            perfis = await _uof.Perfil.Listar(_funcoes.Paginacao);
         }
+
+        Response.Headers.Append("x-Paginacao", perfis.JsonHeaderPaginacao());
+        await _uof.Commit();
+        return Ok(perfis);
     }
 
     /// <summary>
-    /// Retorna a Lista de Campos
+    /// Retorna a Lista de Campos utilizados na pesquisa e ordenação do GRID Perfil
     /// </summary>
     /// <returns>Lista de Campos</returns>
     [HttpGet, Route("Campos")]
     public async Task<ActionResult<Campo>> Campos()
     {
-        try
-        {
-            return Ok(await _campo.Campos("Perfil"));
-        }
-        catch (System.Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
-
-
-    /// <summary>
-    /// Inclui o Contato Tipo
-    /// </summary>
-    /// <param name="perfilSecao">Objeto Contato Tipo</param>
-    /// <returns>O objeto inserido</returns>
-    [HttpPost, Route("PerfilSecao")]
-    public async Task<ActionResult<PerfilSecao>> InserirPerfilSecao([FromBody] PerfilSecao perfilSecao)
-    {
-        try
-        {
-            if (_perfil.Existe(perfilSecao.PerfilID) == false)
-                return NotFound();
-
-            if (_perfilSecao.Existe(perfilSecao) == true)
-                throw new Exception("Seção já cadastrado.");
-
-            await _perfilSecao.Inserir(perfilSecao);
-            return Ok(perfilSecao);
-        }
-        catch (System.Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        await _uof.Commit();
+        return Ok(await _uof.Campo.Campos("Perfil"));
     }
 
     /// <summary>
-    /// Excluir o Perfil Seção
+    /// Retorna os Controllers/Actions do sistema
     /// </summary>
-    /// <param name="id">Id do Contato</param>
-    /// <returns></returns>
-    [HttpDelete(), Route("PerfilSecao")]
-    public async Task<ActionResult> DeletePerfilSecao([FromBody] PerfilSecao perfilSecao)
-    {
-        try
-        {
-            if (_perfilSecao.Existe(perfilSecao) == false)
-                return NotFound();
-
-            await _perfilSecao.Excluir(perfilSecao);
-            return Ok();
-        }
-        catch (System.Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
-
-    /// <summary>
-    /// Retorna o Perfil Seção
-    /// </summary>
-    /// <param name="id">ID do Perfil Seção</param>
     /// <returns>O objeto solicitado</returns>
-    [HttpGet, Route("PerfilSecao")]
-    public async Task<ActionResult<PerfilSecao>> Get()
+    [HttpGet, Route("ControllerAction")]
+    public async Task<ActionResult<ControllerAction>> ControllerAction()
     {
-        try
-        {
-            return Ok(await _secao.Listar());
-        }
-        catch (System.Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        List<ControllerAction> controllerAction = await _uof.ControllerAction.Listar();
+        await _uof.Commit();
+        return Ok(controllerAction.OrderBy(x => x.DescricaoJson).ToList());
+    }
+
+    /// <summary>
+    /// Vincula o Controller/Action ao Perfil
+    /// </summary>
+    /// <param name="perfilControllerAction">Objeto Perfil Controller/Action</param>
+    /// <returns>O objeto inserido</returns>
+    [HttpPost, Route("ControllerAction")]
+    public async Task<ActionResult<PerfilControllerAction>> PerfilControllerAction([FromBody] PerfilControllerAction perfilControllerAction)
+    {
+        if (!_uof.Perfil.Existe(perfilControllerAction.PerfilID))
+            return NotFound(_error.NotFound("Perfil não encontrado."));
+
+        if (!_uof.ControllerAction.Existe(perfilControllerAction.ControllerActionID))
+            return BadRequest(_error.BadRequest("Controller/Action não encontrado."));
+
+        if (_uof.PerfilControllerAction.Existe(perfilControllerAction))
+            return BadRequest(_error.BadRequest("Controller/Action já vinculado ao Perfil."));
+
+        PerfilControllerAction perfilControllerActionNovo = _uof.PerfilControllerAction.Inserir(perfilControllerAction);
+        await _uof.Commit();
+        return Ok(perfilControllerActionNovo);
+    }
+
+    /// <summary>
+    /// Excluir o vinculo entre o Perfil e o Controller/Action
+    /// </summary>
+    /// <param name="perfilControllerAction">Objeto Perfil Controller/Action</param>
+    /// <returns>O objeto excluído</returns>
+    [HttpDelete, Route("ControllerAction")]
+    public async Task<ActionResult<PerfilControllerAction>> DeletePerfilControllerAction([FromBody] PerfilControllerAction perfilControllerAction)
+    {
+        if (!_uof.Perfil.Existe(perfilControllerAction.PerfilID))
+            return NotFound(_error.NotFound("Perfil não encontrado."));
+
+        if (!_uof.ControllerAction.Existe(perfilControllerAction.ControllerActionID))
+            return BadRequest(_error.BadRequest("Controller/Action não encontrado."));
+
+        if (!_uof.PerfilControllerAction.Existe(perfilControllerAction))
+            return BadRequest(_error.BadRequest("Controller/Action não está vinculada ao Perfil."));
+
+        PerfilControllerAction perfilControllerActionNovo = _uof.PerfilControllerAction.Excluir(perfilControllerAction);
+        await _uof.Commit();
+        return Ok(perfilControllerActionNovo);
     }
 }

@@ -1,17 +1,24 @@
 ﻿using Exata.Domain.DTO;
 using Exata.Domain.Entities;
-using Exata.Helpers;
+using Exata.Domain.Paginacao;
 
 namespace Exata.Domain.Interfaces;
 
 public interface IUsuario
 {
-    Task Inserir(Usuario usuario);
-    Task Atualizar(Usuario usuario);
-    Task Excluir(int id);
-    Task<Usuario> Abrir(int id);
-    bool Existe(int id);
-    Task AlterarSenha(Usuario usuario);
-    Task AlterarSenhaADM(Usuario usuario);
-    Task<PagedList<Usuario>> Listar(PaginacaoDTO paginacao);
+    Task<ApplicationUser> Abrir(string id);
+
+    Task<PagedList<ApplicationUser>> Listar(PaginacaoDTO paginacao, string idAdm);
+
+    Task<string> UserID();
+
+    Task<int> QtdeAtivos(string idAdm);
+
+    Task<UsuarioAvatar> InserirAvatar(UsuarioAvatar usuarioAvatar);
+
+    UsuarioAvatar AlterarAvatar(UsuarioAvatar usuarioAvatar);
+
+    bool ExisteAvatar(string id);
+
+    Task<string> Avatar(string id);
 }

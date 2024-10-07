@@ -1,77 +1,134 @@
-﻿using Azure;
-using Azure.Core;
-using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
+﻿using Microsoft.AspNetCore.Mvc;
 using Exata.Domain.DTO;
 using Exata.Domain.Entities;
 using Exata.Domain.Interfaces;
 using Exata.Helpers.Interfaces;
-using System.Linq;
-using Exata.Helpers;
+using Microsoft.AspNetCore.Identity;
+using Exata.Domain.Paginacao;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 
 namespace Exata.API.Controllers;
 
+/// <summary>
+/// Controller utilizado para manter dados de Usuários
+/// </summary>
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class UsuarioController : ControllerBase
 {
-    private readonly IUsuario _usuario;
-    private readonly ICampo _campo;
-    private readonly ICripto _cripto;
-    private readonly JsonSerializerOptions _jsonOptions;
+    private readonly IUnitOfWork _uof;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IErrorRequest _error;
+    private readonly ILicenca _licenca;
+    private readonly IVariaveisAmbiente _varAmbiente;
+    private readonly IFuncoes _funcoes;
 
-    public UsuarioController(IUsuario usuario, ICampo campo, ICripto cripto)
+    /// <summary>
+    /// Controller utilizado para manter dados de Usuários
+    /// </summary>
+    /// <param name="uof"></param>
+    /// <param name="userManager"></param>
+    /// <param name="errorRequest"></param>
+    /// <param name="funcoes"></param>
+    /// <param name="licenca"></param>
+    /// <param name="varAmbiente"></param>
+    public UsuarioController(IUnitOfWork uof,
+                             UserManager<ApplicationUser> userManager,
+                             IErrorRequest errorRequest,
+                             IFuncoes funcoes,
+                             ILicenca licenca,
+                             IVariaveisAmbiente varAmbiente)
     {
-        _usuario = usuario;
-        _campo = campo;
-        _cripto = cripto;
-        _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        _uof = uof;
+        _userManager = userManager;
+        _error = errorRequest;
+        _error.Titulo = "Usuário";
+        _varAmbiente = varAmbiente;
+        _funcoes = funcoes;
+        _licenca = licenca;
     }
 
     /// <summary>
     /// Inclui o Usuário
     /// </summary>
-    /// <param name="Usuario">Objeto Usuario</param>
+    /// <param name="usuario">Objeto Usuario</param>
     /// <returns>O objeto inserido</returns>
     [HttpPost]
-    public async Task<ActionResult<Usuario>> Post([FromBody] Usuario usuario)
+    public async Task<ActionResult<UsuarioDTO>> Post([FromBody] UsuarioDTO usuario)
     {
-        try
-        {            
-            if (_usuario.Existe(usuario.UsuarioID) == true)
-                throw new Exception("Contato já cadastrado.");
+        if (usuario == null)
+            return BadRequest(_error.BadRequest("Usuário não informado."));
 
-            usuario.Senha = _cripto.Criptografar(usuario.Senha);
+        var userExists = await _userManager.FindByNameAsync(usuario.UserName);
+        if (userExists != null)
+            return BadRequest(_error.BadRequest("Usuário já existe."));
 
-            await _usuario.Inserir(usuario);
-            return Ok(usuario);
-        }
-        catch (System.Exception ex)
+        if (usuario.Ativo == true)
+            if (await _uof.Usuario.QtdeAtivos(_varAmbiente.UsuarioADM) >= _licenca.DadosLicenca.QtdeUsuarios)
+                return BadRequest(_error.BadRequest($"Limite de licenças ativas atingida ({_licenca.DadosLicenca.QtdeUsuarios})."));
+
+        if (string.IsNullOrEmpty(usuario.Senha))
+            return BadRequest(_error.BadRequest("Informar a senha do usuário."));
+
+        ApplicationUser user = new()
         {
-            return BadRequest(ex.Message);
+            Email = usuario.Email,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = usuario.UserName,
+            PerfilID = usuario.PerfilID,
+            Nome = usuario.Nome,
+            Ativo = usuario.Ativo,
+            booNovo = true,
+            PhoneNumber = usuario.PhoneNumber
+        };
+
+        var result = await _userManager.CreateAsync(user, usuario.Senha);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(_error.BadRequest(result));
         }
+
+        await _uof.Commit();
+        return Ok(usuario);
     }
 
     /// <summary>
     /// Alterar o Usuário
     /// </summary>
-    /// <param name="Usuario">Objeto Usuário</param>
+    /// <param name="usuario">Objeto Usuário</param>
     /// <returns>O objeto alterado.</returns>
     [HttpPut]
-    public async Task<ActionResult<Usuario>> Put([FromBody] Usuario usuario)
+    public async Task<ActionResult<UsuarioDTO>> Put([FromBody] UsuarioDTO usuario)
     {
-        try
-        {
-            if (_usuario.Existe(usuario.UsuarioID) == false)
-                return NotFound();
+        var user = await _userManager.FindByNameAsync(usuario.UserName);
+        if (user == null)
+            return NotFound(_error.NotFound("Usuário não encontrado"));
 
-            await _usuario.Atualizar(usuario);
-            return Ok(usuario);
-        }
-        catch (System.Exception ex)
+        if (user.Ativo != usuario.Ativo && usuario.Ativo == true)
         {
-            return BadRequest(ex.Message);
+            if (await _uof.Usuario.QtdeAtivos(_varAmbiente.UsuarioADM) >= _licenca.DadosLicenca.QtdeUsuarios)
+                return BadRequest(_error.BadRequest($"Limite de licenças ativas atingida ({_licenca.DadosLicenca.QtdeUsuarios})."));
         }
+
+        user.Email = usuario.Email;
+        user.PerfilID = usuario.PerfilID;
+        user.DataAlteracao = DateTime.Now;
+        user.Nome = usuario.Nome;
+        user.Ativo = usuario.Ativo;
+        user.PhoneNumber = usuario.PhoneNumber;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            return BadRequest(_error.BadRequest(result));
+        }
+
+        await _uof.Commit();
+        return Ok(usuario);
     }
 
     /// <summary>
@@ -80,81 +137,68 @@ public class UsuarioController : ControllerBase
     /// <param name="id">Id do Usuário</param>
     /// <returns></returns>
     [HttpDelete()]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<ActionResult> Delete(string id)
     {
-        try
-        {
-            if (_usuario.Existe(id) == false)
-                return NotFound();
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+            return NotFound(_error.NotFound("Usuário não encontrado"));
 
-            await _usuario.Excluir(id);
-            return Ok();
-        }
-        catch (System.Exception ex)
+        var result = await _userManager.DeleteAsync(user);
+        if (!result.Succeeded)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(_error.BadRequest(result));
         }
+
+        await _uof.Commit();
+        return Ok();
     }
 
     /// <summary>
     /// Usuário Alterando a Senha
     /// </summary>
-    /// <param name="Usuario">Objeto Usuário</param>
+    /// <param name="usuarioDTO">Objeto Usuário</param>
     /// <returns>O objeto alterado.</returns>
-    [HttpPut, Route("AlterarSenha")]
+    [HttpPatch, Route("AlterarSenha")]
     public async Task<ActionResult<UsuarioSenhaDTO>> AlterarSenha([FromBody] UsuarioSenhaDTO usuarioDTO)
     {
-        try
+        if (usuarioDTO.SenhaNova != usuarioDTO.SenhaNovaConfirmacao)
+            return BadRequest(_error.BadRequest("Senhas novas não conferem!"));
+
+        var user = await _userManager.FindByNameAsync(usuarioDTO.Login);
+        if (user == null)
+            return NotFound(_error.NotFound("Usuário não encontrado"));
+
+        var result = await _userManager.ChangePasswordAsync(user, usuarioDTO.SenhaAntiga, usuarioDTO.SenhaNova);
+        if (!result.Succeeded)
         {
-            if (usuarioDTO.SenhaNova != usuarioDTO.SenhaNovaConfirmacao)
-                throw new Exception("Senhas novas não conferem!");
-
-            if (_usuario.Existe(usuarioDTO.UsuarioID) == false)
-                return NotFound();
-
-            Usuario usuario = await _usuario.Abrir(usuarioDTO.UsuarioID);
-
-            if (_cripto.Descriptografar(usuario.Senha) != usuarioDTO.SenhaAntiga)
-                throw new Exception("Senha utilizada não confere com senha antiga digitada.");
-
-            if (_cripto.Descriptografar(usuario.Senha) == usuarioDTO.SenhaNova)
-                throw new Exception("Não pode ser igual a última senha utilizada.");
-
-            usuario.Senha = _cripto.Criptografar(usuarioDTO.SenhaNova);
-            await _usuario.AlterarSenha(usuario);
-            return Ok(usuario);
+            return BadRequest(_error.BadRequest(result));
         }
-        catch (System.Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+
+        await _uof.Commit();
+        return Ok(usuarioDTO);
     }
 
     /// <summary>
-    /// ADM Alterando a Senha
+    /// ADM Alterando a Senha do usuário
     /// </summary>
-    /// <param name="Usuario">Objeto Usuário</param>
+    /// <param name="usuarioDTO">Objeto Usuário</param>
     /// <returns>O objeto alterado.</returns>
-    [HttpPut, Route("AlterarSenhaADM")]
+    [HttpPatch, Route("AlterarSenhaADM")]
     public async Task<ActionResult<UsuarioSenhaDTO>> AlterarSenhaADM([FromBody] UsuarioSenhaDTO usuarioDTO)
     {
-        try
-        {            
-            if (_usuario.Existe(usuarioDTO.UsuarioID) == false)
-                return NotFound();
+        var user = await _userManager.FindByNameAsync(usuarioDTO.Login);
+        if (user == null)
+            return NotFound(_error.NotFound("Usuário não encontrado"));
 
-            Usuario usuario = new Usuario {
-                UsuarioID = usuarioDTO.UsuarioID,
-                Senha = _cripto.Criptografar(usuarioDTO.SenhaNova)
-            };
-            
-            await _usuario.AlterarSenhaADM(usuario);
-            return Ok(usuario);
-        }
-        catch (System.Exception ex)
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var result = await _userManager.ResetPasswordAsync(user, token, usuarioDTO.SenhaNova);
+        if (!result.Succeeded)
         {
-            return BadRequest(ex.Message);
+            return BadRequest(_error.BadRequest(result));
         }
+
+        await _uof.Commit();
+        return Ok(usuarioDTO);
     }
 
     /// <summary>
@@ -163,21 +207,16 @@ public class UsuarioController : ControllerBase
     /// <param name="id">ID do Usuário</param>
     /// <returns>O objeto solicitado</returns>
     [HttpGet]
-    public async Task<ActionResult<Usuario>> Get(int id)
+    public async Task<ActionResult<ApplicationUser>> Get(string id)
     {
-        try
-        {
-            if (_usuario.Existe(id) == false)
-                return NotFound();
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+            return NotFound(_error.NotFound("Usuário não encontrado"));
 
-            Usuario usuario = await _usuario.Abrir(id);
-            usuario.Senha = null;
-            return Ok(usuario);
-        }
-        catch (System.Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        user = await _uof.Usuario.Abrir(id);
+
+        await _uof.Commit();
+        return Ok(user);
     }
 
     /// <summary>
@@ -187,57 +226,142 @@ public class UsuarioController : ControllerBase
     [HttpGet, Route("Listar")]
     public async Task<IActionResult> Listar()
     {
-        try
+        var user = await _userManager.Users.Select(x => x.Ativo == true).ToListAsync();
+
+        if (!_funcoes.ValidacaoHeaderPaginacao(Request.Headers))
         {
-            PaginacaoDTO _paginacao = null;
-
-            if (Request.Headers.TryGetValue("x-Paginacao", out var hPaginacao))
-            {
-                _paginacao = JsonSerializer.Deserialize<PaginacaoDTO>(hPaginacao, _jsonOptions);
-                if (!TryValidateModel(_paginacao))
-                    return BadRequest(ModelState);
-            }
-            else
-            {
-                ModelState.AddModelError("Pagina",
-                            "Header x-Paginacao não informado.");
-                return BadRequest(ModelState);
-            }
-
-            PagedList<Usuario> usuarios = await _usuario.Listar(_paginacao);
-
-            if (usuarios.TotalPaginas == 0)
-                return NotFound();
-
-            if (_paginacao.Pagina > usuarios.TotalPaginas)
-            {
-                _paginacao.Pagina = usuarios.TotalPaginas;
-                usuarios = await _usuario.Listar(_paginacao);
-            }
-
-            Response.Headers.Append("x-Paginacao", usuarios.JsonHeaderPaginacao());
-            return Ok(usuarios);
+            return BadRequest(_error.BadRequest(_funcoes.errors));
         }
-        catch (System.Exception ex)
+
+        PagedList<ApplicationUser> usuarios = await _uof.Usuario.Listar(_funcoes.Paginacao, _varAmbiente.UsuarioADM);
+
+        if (usuarios.TotalPaginas == 0)
+            return NotFound(_error.NotFound("Não existe registros."));
+
+        if (_funcoes.Paginacao.Pagina > usuarios.TotalPaginas)
         {
-            return BadRequest(ex.Message);
+            _funcoes.Paginacao.Pagina = usuarios.TotalPaginas;
+            usuarios = await _uof.Usuario.Listar(_funcoes.Paginacao, _varAmbiente.UsuarioADM);
         }
+
+        Response.Headers.Append("x-Paginacao", usuarios.JsonHeaderPaginacao());
+
+        foreach (ApplicationUser usuario in usuarios)
+        {
+            usuario.RefreshToken = null;
+            usuario.PasswordHash = null;
+            usuario.SecurityStamp = null;
+            usuario.ConcurrencyStamp = null;
+        }
+
+        await _uof.Commit();
+        return Ok(usuarios);
     }
 
     /// <summary>
-    /// Retorna a Lista de Campos
+    /// Retorna a Lista de Campos utilizados na pesquisa e ordenação do GRID Usuários
     /// </summary>
     /// <returns>Lista de Campos</returns>
     [HttpGet, Route("Campos")]
     public async Task<ActionResult<Campo>> Campos()
     {
-        try
+        await _uof.Commit();
+        return Ok(await _uof.Campo.Campos("Usuario"));
+    }
+
+    /// <summary>
+    /// Cria o usuário ADM do Sistema
+    /// </summary>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [HttpGet, Route("UsuarioADM")]
+    public async Task<IActionResult> UsuarioADM()
+    {
+        ApplicationUser UsuarioADM = new()
         {
-            return Ok(await _campo.Campos("Usuario"));
-        }
-        catch (System.Exception ex)
+            UserName = "WAutom",
+            Email = "wautom@Exata.com.br",
+            SecurityStamp = Guid.NewGuid().ToString(),
+            Nome = "WAutom ADM",
+            Ativo = true,
+            booNovo = true
+        };
+
+        var userExists = await _userManager.FindByNameAsync(UsuarioADM.UserName);
+        if (userExists == null)
         {
-            return BadRequest(ex.Message);
+            var result = await _userManager.CreateAsync(UsuarioADM, "W@utom7!");
+            if (!result.Succeeded)
+            {
+                return BadRequest(_error.BadRequest(result));
+            }
         }
+        await _uof.Commit();
+        return Ok();
+    }
+
+    /// <summary>
+    /// Retorna os Perfis
+    /// </summary>
+    /// <returns>O objeto solicitado</returns>
+    [HttpGet, Route("Perfil")]
+    public async Task<ActionResult<Perfil>> Perfil()
+    {
+        await _uof.Commit();
+        return Ok(await _uof.Perfil.Listar());
+    }
+
+    /// <summary>
+    /// Alterar Tema do Usuário
+    /// </summary>
+    /// <param name="usuario">Objeto Usuário</param>
+    /// <returns>O objeto alterado.</returns>
+    [HttpPatch, Route("AlterarTema")]
+    public async Task<ActionResult<UsuarioTemaDTO>> AlterarTema([FromBody] UsuarioTemaDTO usuario)
+    {
+        var user = await _userManager.FindByNameAsync(usuario.UserName);
+        if (user == null)
+            return NotFound(_error.NotFound("Usuário não encontrado"));
+
+        user.Tema = usuario.Tema;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            return BadRequest(_error.BadRequest(result));
+        }
+
+        await _uof.Commit();
+        return Ok(usuario);
+    }
+
+    /// <summary>
+    /// Incluir/Alterar Avatar do Usuário
+    /// </summary>
+    /// <param name="usuarioAvatar">Objeto Logo do Usuário</param>
+    /// <returns>O objeto incluido/alterado.</returns>
+    [HttpPatch, Route("IncluirAvatar")]
+    public async Task<ActionResult<UsuarioAvatar>> IncluirAvatar([FromBody] UsuarioAvatar usuarioAvatar)
+    {
+        var user = await _userManager.FindByNameAsync(usuarioAvatar.Login);
+        if (user == null)
+            return NotFound(_error.NotFound("Usuário não encontrado."));
+
+        if (usuarioAvatar == null)
+            return BadRequest(_error.BadRequest("Avatar não informado."));
+
+        if (string.IsNullOrEmpty(usuarioAvatar.Avatar))
+            return BadRequest(_error.BadRequest("Logo não informado."));
+
+        usuarioAvatar.UsuarioID = user.Id;
+        UsuarioAvatar usuarioAvatarNovo;
+
+        if (_uof.Usuario.ExisteAvatar(usuarioAvatar.UsuarioID))
+            usuarioAvatarNovo = _uof.Usuario.AlterarAvatar(usuarioAvatar);
+        else
+            usuarioAvatarNovo = await _uof.Usuario.InserirAvatar(usuarioAvatar);
+
+        await _uof.Commit();
+        return Ok(usuarioAvatarNovo);
     }
 }

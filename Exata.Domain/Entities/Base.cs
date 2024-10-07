@@ -1,23 +1,27 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace Exata.Domain.Entities;
 
 public class Base
 {
+    [NotMapped]
     private bool _booNovo;
 
     [JsonIgnore]
     public DateTime DataCadastro { get; set; }
 
     [JsonIgnore]
-    public int? UserCadastro { get; set; }
+    [StringLength(450)]
+    public string UserCadastro { get; set; }
 
     [JsonIgnore]
     public DateTime DataAlteracao { get; set; }
 
     [JsonIgnore]
-    public int? UserAlteracao { get; set; }
+    [StringLength(450)]
+    public string? UserAlteracao { get; set; }
 
     [NotMapped]
     public string DataCadastroFormatada
@@ -42,6 +46,7 @@ public class Base
             DataAlteracao = DateTime.Now;
             if (_booNovo) { 
                 DataCadastro = DataAlteracao;
+                UserAlteracao = UserCadastro;
             }
         }
     }
