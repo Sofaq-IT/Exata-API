@@ -94,7 +94,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "WAutom", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Exata API", Version = "v1" });
 
     c.IncludeXmlComments($@"{AppDomain.CurrentDomain.BaseDirectory}\Exata.API.xml");
 
@@ -176,7 +176,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
     app.UseSwagger();
     app.UseSwaggerUI(s => {
-        s.DocumentTitle = app.Environment.EnvironmentName.ToString() + " - API WAutom";
+        s.DocumentTitle = app.Environment.EnvironmentName.ToString() + " - API Exata";
     });
 }
 
