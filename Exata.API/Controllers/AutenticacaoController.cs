@@ -7,6 +7,7 @@ using Exata.Domain.DTO;
 using Exata.Helpers.Interfaces;
 using Exata.Domain.Entities;
 using Exata.Domain.Interfaces;
+using Exata.Helpers;
 
 namespace Exata.API.Controllers;
 
@@ -25,6 +26,8 @@ public class AutenticacaoController : ControllerBase
     private readonly IErrorRequest _error;
     private readonly ILicenca _licenca;
     private readonly IVariaveisAmbiente _varAmbiente;
+    private readonly IFuncoes _funcoes;
+    private readonly IEmail _email;
 
     /// <summary>
     /// Controller utilizado para Autenticação
@@ -37,6 +40,8 @@ public class AutenticacaoController : ControllerBase
     /// <param name="error"></param>
     /// <param name="licenca"></param>
     /// <param name="varAmbiente"></param>
+    /// <param name="funcoes"></param>
+    /// <param name="email"></param>
     public AutenticacaoController(IToken token,
                                   UserManager<ApplicationUser> userManager,
                                   RoleManager<IdentityRole> roleManager,
@@ -44,7 +49,9 @@ public class AutenticacaoController : ControllerBase
                                   ICripto cripto,
                                   IErrorRequest error,
                                   ILicenca licenca,
-                                  IVariaveisAmbiente varAmbiente)
+                                  IVariaveisAmbiente varAmbiente,
+                                  IFuncoes funcoes,
+                                  IEmail email)
     {
         _token = token;
         _userManager = userManager;
@@ -55,6 +62,8 @@ public class AutenticacaoController : ControllerBase
         _error.Titulo = "Autorização";
         _licenca = licenca;
         _varAmbiente = varAmbiente;
+        _funcoes = funcoes;
+        _email = email;
     }
 
     /// <summary>
@@ -203,6 +212,94 @@ public class AutenticacaoController : ControllerBase
 
         user.RefreshToken = null;
         await _userManager.UpdateAsync(user);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Solicita Cadastro de Nova Senha
+    /// </summary>
+    /// <param name="email">Email do Usuário</param>
+    /// <returns></returns>
+    [HttpPost, Route("EsqueciMinhaSenha")]
+    public async Task<IActionResult> EsqueciMinhaSenha([FromBody] string email)
+    {
+        if (string.IsNullOrEmpty(email))
+            return BadRequest(_error.BadRequest("Para seguir, é preciso informar um e-mail cadastrado!"));
+
+        var user = await _uof.Usuario.BuscarPorEmail(email);
+        
+        if (user == null)
+            return BadRequest(_error.BadRequest("Usuário não encontrato com o e-mail informado!"));
+
+        var codigoVerificacao = _funcoes.GenerateRandomNumber();
+
+        user.CodigoVerificacaoEsqueciMinhaSenha = codigoVerificacao;
+
+        var result = await _userManager.UpdateAsync(user);
+        
+        if (!result.Succeeded)
+        {
+            return BadRequest(_error.BadRequest(result));
+        }
+
+        await _uof.Commit();
+
+        try
+        {
+            _email.Enviar(new EmailDTO()
+            {
+                Assunto = "SISTEMA EXATA - CÓDIGO DE VERIFICAÇÃO",
+                CorpoEmail = "SEU CÓDIGO DE VERIFICAÇÃO: " + codigoVerificacao,
+                Destinatarios = [email],
+                Html = false
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(_error.BadRequest("Erro ao enviar e-mail: " + ex.Message));
+        }
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Verifica o Código e o E-mail para Alteração de Senha
+    /// </summary>
+    /// <param name="verificacaoCodigo">Objeto VerificacaoCodigoDTO</param>
+    /// <returns></returns>
+    [HttpPost, Route("VerificarCodigo")]
+    public async Task<IActionResult> VerificarCodigo([FromBody] VerificacaoCodigoDTO verificacaoCodigo)
+    {
+        var user = await _uof.Usuario.VerificarCodigo(verificacaoCodigo);
+
+        if (user == null)
+            return BadRequest(_error.BadRequest("E-mail e Código enviado não são equivalentes!"));
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Atualiza Senha
+    /// </summary>
+    /// <param name="login">Objeto LoginDTO</param>
+    /// <returns></returns>
+    [HttpPut, Route("AtualizarSenha")]
+    public async Task<IActionResult> AtualizarSenha([FromBody] LoginDTO login)
+    {
+        var user = await _uof.Usuario.BuscarPorEmail(login.Usuario);
+
+        if (user == null)
+            return BadRequest(_error.BadRequest("Usuário não localizado com o E-mail informado!"));
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var result = await _userManager.ResetPasswordAsync(user, token, login.Senha);
+        if (!result.Succeeded)
+        {
+            return BadRequest(_error.BadRequest(result));
+        }
+
+        await _uof.Commit();
+
         return NoContent();
     }
 

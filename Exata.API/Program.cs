@@ -13,6 +13,7 @@ using Exata.Helpers;
 using Exata.Helpers.Interfaces;
 using Exata.Repository.Context;
 using Exata.Repository.Repositories;
+using Exata.Domain.DTO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -148,6 +149,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<ICampo, CampoRepository>();
 builder.Services.AddScoped<IControllerAction, ControllerActionRepository>();
 builder.Services.AddScoped<ICripto>(sp => new Cripto(sChave, sVetor));
+builder.Services.AddScoped<IEmail, Email>();
 builder.Services.AddScoped<IErrorRequest, ErrorRequest>();
 builder.Services.AddScoped<IFuncoes, Funcoes>();
 builder.Services.AddScoped<ILicenca, Licenca>();
@@ -164,6 +166,8 @@ builder.Services.AddScoped<IVariaveisAmbiente>(sp => new VariaveisAmbiente(
     sUsuarioADM,
     sLogarRequisicoes,
     sLicenca));
+
+builder.Services.Configure<SmtpSettingsDTO>(builder.Configuration.GetSection("SmtpConfiguration"));
 
 var app = builder.Build();
 

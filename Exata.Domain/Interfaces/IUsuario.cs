@@ -21,4 +21,8 @@ public interface IUsuario
     bool ExisteAvatar(string id);
 
     Task<string> Avatar(string id);
+
+    Task<ApplicationUser> BuscarPorEmail(string email);
+
+    Task<ApplicationUser> VerificarCodigo(VerificacaoCodigoDTO verificacaoCodigo);
 }

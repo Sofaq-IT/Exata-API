@@ -143,4 +143,14 @@ public class UsuarioRepository : IUsuario
             .Select(x => x.Avatar)
             .FirstOrDefaultAsync();
     }
+
+    public async Task<ApplicationUser> BuscarPorEmail(string email)
+    {
+        return await _ctx.Users.Where(x => x.Email == email).SingleOrDefaultAsync();
+    }
+
+    public async Task<ApplicationUser> VerificarCodigo(VerificacaoCodigoDTO verificacaoCodigo)
+    {
+        return await _ctx.Users.Where(x => x.Email == verificacaoCodigo.Email && x.CodigoVerificacaoEsqueciMinhaSenha == verificacaoCodigo.Codigo).SingleOrDefaultAsync();
+    }
 }

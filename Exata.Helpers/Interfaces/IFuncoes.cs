@@ -17,5 +17,5 @@ public interface IFuncoes
 
     public bool ValidacaoHeaderPaginacao(IHeaderDictionary header);
 
-
+    public int GenerateRandomNumber();
 }

@@ -43,6 +43,7 @@ public class ApplicationUser : IdentityUser
     public List<Perfil> PerfilCriacao { get; set; }
 
     public List<Perfil> PerfilAlteracao { get; set; }
+    public int? CodigoVerificacaoEsqueciMinhaSenha { get; set; }
 
     [NotMapped]
     public string DataCadastroFormatada

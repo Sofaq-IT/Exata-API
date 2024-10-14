@@ -53,4 +53,11 @@ public class Funcoes : IFuncoes
 
         return _errors;
     }
+
+    public int GenerateRandomNumber()
+    {
+        Random random = new Random();
+        // Gera um número entre 100000 e 999999, que são os limites para um número de 6 dígitos
+        return random.Next(100000, 1000000);
+    }
 }
