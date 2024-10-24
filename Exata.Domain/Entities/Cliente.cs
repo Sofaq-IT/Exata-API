@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.RegularExpressions;
 
 namespace Exata.Domain.Entities
 {
@@ -13,8 +14,17 @@ namespace Exata.Domain.Entities
         [MaxLength(1), Required]
         public string FisicaJuridica { get; set; }
 
+        private string _cpfCnpj;
+
         [MaxLength(14), Required]
-        public string CpfCnpj { get; set; }
+        public string CpfCnpj
+        {
+            get { return _cpfCnpj; }
+            set
+            {
+                _cpfCnpj = Regex.Replace(value, @"[^0-9]", "");
+            }
+        }
 
         [MaxLength(350), Required]
         public string NomeRazaoSocial { get; set; }
@@ -50,6 +60,7 @@ namespace Exata.Domain.Entities
         public string Estado { get; set; }
 
         [Required]
-        public bool Ativo { get; set; }
+        public bool Ativo { get; set; }        
+
     }
 }
