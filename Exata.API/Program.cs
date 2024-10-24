@@ -147,6 +147,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddScoped<ICampo, CampoRepository>();
+builder.Services.AddScoped<ICliente, ClienteRepository>();
 builder.Services.AddScoped<IControllerAction, ControllerActionRepository>();
 builder.Services.AddScoped<ICripto>(sp => new Cripto(sChave, sVetor));
 builder.Services.AddScoped<IEmail, Email>();

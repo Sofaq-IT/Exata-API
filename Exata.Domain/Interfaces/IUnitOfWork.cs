@@ -4,6 +4,8 @@ public interface IUnitOfWork
 {
     ICampo Campo { get; }
 
+    ICliente Cliente { get; }
+
     IControllerAction ControllerAction { get; }
 
     IContratante Contratante { get; }
