@@ -1,12 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Exata.Domain.Entities;
 
@@ -34,12 +29,16 @@ public class ApplicationUser : IdentityUser
     [JsonIgnore]
     public DateTime DataAlteracao { get; set; }
 
+    public int? ClienteID { get; set; }
+
     public int? PerfilID { get; set; }
 
     public UsuarioAvatar UsuarioAvatar { get; set; }
 
+    public virtual Cliente Cliente { get; set; }
+
     public virtual Perfil Perfil { get; set; }
-        
+
     public List<Perfil> PerfilCriacao { get; set; }
 
     public List<Perfil> PerfilAlteracao { get; set; }

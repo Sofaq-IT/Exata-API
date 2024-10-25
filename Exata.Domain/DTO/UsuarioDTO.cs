@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Exata.Domain.DTO;
 
@@ -31,6 +26,8 @@ public class UsuarioDTO
     public string Nome { get; set; }
 
     public string Tema { get; set; } = "light";
+
+    public int? ClienteID { get; set; }
 
     public int? PerfilID { get; set; }
 

@@ -7,7 +7,6 @@ namespace Exata.Repository.Repositories;
 public class UnitOfWork : IUnitOfWork
 {
     private ICliente _cliente;
-    private IContratante _contratante;
     private IControllerAction _controllerAction;
     private ILogRequisicao _logRequisicao;
     private IPerfil _perfil;
@@ -42,14 +41,6 @@ public class UnitOfWork : IUnitOfWork
         get
         {
             return _cliente = _cliente ?? new ClienteRepository(_ctx, _campo, _usuario);
-        }
-    }
-
-    public IContratante Contratante
-    {
-        get
-        {
-            return _contratante = _contratante ?? new ContratanteRepository(_ctx);
         }
     }
 

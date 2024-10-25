@@ -7,7 +7,6 @@ using Exata.Domain.DTO;
 using Exata.Helpers.Interfaces;
 using Exata.Domain.Entities;
 using Exata.Domain.Interfaces;
-using Exata.Helpers;
 
 namespace Exata.API.Controllers;
 
@@ -24,7 +23,6 @@ public class AutenticacaoController : ControllerBase
     private readonly IUnitOfWork _uof;
     private readonly ICripto _cripto;
     private readonly IErrorRequest _error;
-    private readonly ILicenca _licenca;
     private readonly IVariaveisAmbiente _varAmbiente;
     private readonly IFuncoes _funcoes;
     private readonly IEmail _email;
@@ -48,7 +46,6 @@ public class AutenticacaoController : ControllerBase
                                   IUnitOfWork uof,
                                   ICripto cripto,
                                   IErrorRequest error,
-                                  ILicenca licenca,
                                   IVariaveisAmbiente varAmbiente,
                                   IFuncoes funcoes,
                                   IEmail email)
@@ -60,7 +57,6 @@ public class AutenticacaoController : ControllerBase
         _cripto = cripto;
         _error = error;
         _error.Titulo = "Autorização";
-        _licenca = licenca;
         _varAmbiente = varAmbiente;
         _funcoes = funcoes;
         _email = email;
@@ -74,10 +70,6 @@ public class AutenticacaoController : ControllerBase
     [HttpPost, Route("Login")]
     public async Task<ActionResult<AutorizacaoDTO>> Login([FromBody] LoginDTO login)
     {
-        if (!string.Equals(login.Usuario, _varAmbiente.UsuarioADM))
-            if (DateTime.Now >= _licenca.DadosLicenca.DataValidade.AddDays(20))
-                return BadRequest(_error.BadRequest($"Expirado a Validade da Licença! ({_licenca.DadosLicenca.DataValidade})"));
-
         var user = await _userManager.FindByNameAsync(login.Usuario!);
 
         if (user is not null && await _userManager.CheckPasswordAsync(user, login.Senha!))
@@ -129,8 +121,6 @@ public class AutenticacaoController : ControllerBase
             if (_uof.Usuario.ExisteAvatar(user.Id))
                 autoriza.Avatar = await _uof.Usuario.Avatar(user.Id);
 
-            if (_licenca.DadosLicenca != null)
-                autoriza.ValidadeLicenca = _licenca.DadosLicenca.DataValidade;
             return Ok(autoriza);
         }
         return Unauthorized();
@@ -318,14 +308,4 @@ public class AutenticacaoController : ControllerBase
         return Ok(_cripto.Criptografar(id));
     }
 
-    /// <summary>
-    /// Consulta Dados da Licença
-    /// </summary>
-    /// <returns></returns>
-    [Authorize]
-    [HttpGet, Route("Licenca")]
-    public ActionResult<LicencaDTO> Licenca()
-    {
-        return Ok(_licenca.DadosLicenca);
-    }
 }

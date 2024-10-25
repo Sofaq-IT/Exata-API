@@ -22,7 +22,6 @@ public class UsuarioController : ControllerBase
     private readonly IUnitOfWork _uof;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IErrorRequest _error;
-    private readonly ILicenca _licenca;
     private readonly IVariaveisAmbiente _varAmbiente;
     private readonly IFuncoes _funcoes;
 
@@ -39,7 +38,6 @@ public class UsuarioController : ControllerBase
                              UserManager<ApplicationUser> userManager,
                              IErrorRequest errorRequest,
                              IFuncoes funcoes,
-                             ILicenca licenca,
                              IVariaveisAmbiente varAmbiente)
     {
         _uof = uof;
@@ -48,7 +46,6 @@ public class UsuarioController : ControllerBase
         _error.Titulo = "Usuário";
         _varAmbiente = varAmbiente;
         _funcoes = funcoes;
-        _licenca = licenca;
     }
 
     /// <summary>
@@ -65,10 +62,6 @@ public class UsuarioController : ControllerBase
         var userExists = await _userManager.FindByNameAsync(usuario.UserName);
         if (userExists != null)
             return BadRequest(_error.BadRequest("Usuário já existe."));
-
-        if (usuario.Ativo == true)
-            if (await _uof.Usuario.QtdeAtivos(_varAmbiente.UsuarioADM) >= _licenca.DadosLicenca.QtdeUsuarios)
-                return BadRequest(_error.BadRequest($"Limite de licenças ativas atingida ({_licenca.DadosLicenca.QtdeUsuarios})."));
 
         if (string.IsNullOrEmpty(usuario.Senha))
             return BadRequest(_error.BadRequest("Informar a senha do usuário."));
@@ -107,12 +100,6 @@ public class UsuarioController : ControllerBase
         var user = await _userManager.FindByNameAsync(usuario.UserName);
         if (user == null)
             return NotFound(_error.NotFound("Usuário não encontrado"));
-
-        if (user.Ativo != usuario.Ativo && usuario.Ativo == true)
-        {
-            if (await _uof.Usuario.QtdeAtivos(_varAmbiente.UsuarioADM) >= _licenca.DadosLicenca.QtdeUsuarios)
-                return BadRequest(_error.BadRequest($"Limite de licenças ativas atingida ({_licenca.DadosLicenca.QtdeUsuarios})."));
-        }
 
         user.Email = usuario.Email;
         user.PerfilID = usuario.PerfilID;

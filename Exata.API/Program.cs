@@ -153,7 +153,6 @@ builder.Services.AddScoped<ICripto>(sp => new Cripto(sChave, sVetor));
 builder.Services.AddScoped<IEmail, Email>();
 builder.Services.AddScoped<IErrorRequest, ErrorRequest>();
 builder.Services.AddScoped<IFuncoes, Funcoes>();
-builder.Services.AddScoped<ILicenca, Licenca>();
 builder.Services.AddScoped<ILogRequisicao, LogRequisicoesRepository>();
 builder.Services.AddScoped<IToken, Token>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

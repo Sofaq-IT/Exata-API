@@ -13,6 +13,7 @@ namespace Exata.API.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class PerfilController : ControllerBase
 {
     private readonly IUnitOfWork _uof;

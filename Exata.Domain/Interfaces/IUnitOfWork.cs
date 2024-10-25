@@ -8,8 +8,6 @@ public interface IUnitOfWork
 
     IControllerAction ControllerAction { get; }
 
-    IContratante Contratante { get; }
-
     ILogRequisicao LogRequisicao { get; }
 
     IPerfil Perfil { get; }
