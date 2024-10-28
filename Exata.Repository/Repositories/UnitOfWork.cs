@@ -8,6 +8,7 @@ public class UnitOfWork : IUnitOfWork
 {
     private ICliente _cliente;
     private IControllerAction _controllerAction;
+    private IEmpresa _empresa;
     private ILogRequisicao _logRequisicao;
     private IPerfil _perfil;
     private IPerfilControllerAction _perfilControllerAction;
@@ -49,6 +50,14 @@ public class UnitOfWork : IUnitOfWork
         get
         {
             return _controllerAction = _controllerAction ?? new ControllerActionRepository(_ctx);
+        }
+    }
+
+    public IEmpresa Empresa
+    {
+        get
+        {
+            return _empresa = _empresa ?? new EmpresaRepository(_ctx, _campo, _usuario);
         }
     }
 

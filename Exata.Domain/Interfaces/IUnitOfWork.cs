@@ -8,6 +8,8 @@ public interface IUnitOfWork
 
     IControllerAction ControllerAction { get; }
 
+    IEmpresa Empresa { get; }
+
     ILogRequisicao LogRequisicao { get; }
 
     IPerfil Perfil { get; }

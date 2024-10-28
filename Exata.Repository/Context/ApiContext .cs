@@ -100,6 +100,7 @@ public class ApiContext : IdentityDbContext<ApplicationUser>
     public DbSet<Campo> Campo { get; set; }
     public DbSet<Cliente> Cliente { get; set; }
     public DbSet<ControllerAction> ControllerAction { get; set; }
+    public DbSet<Empresa> Empresa { get; set; }
     public DbSet<LogRequisicao> LogRequisicoes { get; set; }
     public DbSet<Perfil> Perfil { get; set; }
     public DbSet<PerfilControllerAction> PerfilControllerAction { get; set; }
