@@ -4,6 +4,7 @@ using Exata.Domain.Entities;
 using Exata.Domain.Interfaces;
 using Exata.Domain.Paginacao;
 using Exata.Helpers.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace Exata.API.Controllers;
 
@@ -16,6 +17,7 @@ namespace Exata.API.Controllers;
 public class EmpresaController : ControllerBase
 {
     private readonly IUnitOfWork _uof;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly IErrorRequest _error;
     private readonly IFuncoes _funcoes;
 
@@ -23,13 +25,16 @@ public class EmpresaController : ControllerBase
     /// Controller utilizado para manter dados do Empresa
     /// </summary>
     /// <param name="uof"></param>
+    /// <param name="userManager"></param>
     /// <param name="erro"></param>
     /// <param name="funcoes"></param>
     public EmpresaController(IUnitOfWork uof,
+                            UserManager<ApplicationUser> userManager,
                             IErrorRequest erro,
                             IFuncoes funcoes)
     {
         _uof = uof;
+        _userManager = userManager;
         _error = erro;
         _error.Titulo = "Empresa";
         _funcoes = funcoes;
@@ -46,8 +51,32 @@ public class EmpresaController : ControllerBase
         if (_uof.Empresa.Existe(empresa.EmpresaID) == true)
             return BadRequest(_error.BadRequest("Empresa já cadastrada."));
 
+        if (_uof.Empresa.Existe(empresa.CpfCnpj) == true)
+            return BadRequest(_error.BadRequest("Empresa já cadastrada."));
+
         Empresa empresaNova = await _uof.Empresa.Inserir(empresa);
+
+        ApplicationUser user = new()
+        {
+            Email = empresa.Email,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = empresa.Email,
+            PerfilID = 2, // 2 - Empresa/Laboratório
+            Nome = empresa.ApelidoNomeFantasia,
+            Ativo = true,
+            booNovo = true,
+            PhoneNumber = empresa.Telefone
+        };
+
+        var result = await _userManager.CreateAsync(user, Helpers.Funcoes.GenerateRandomString(10));
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(_error.BadRequest(result));
+        }
+
         await _uof.Commit();
+        
         return Ok(empresaNova);
     }
 

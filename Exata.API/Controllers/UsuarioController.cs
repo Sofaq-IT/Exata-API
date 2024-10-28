@@ -17,6 +17,7 @@ namespace Exata.API.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class UsuarioController : ControllerBase
 {
     private readonly IUnitOfWork _uof;
@@ -32,7 +33,6 @@ public class UsuarioController : ControllerBase
     /// <param name="userManager"></param>
     /// <param name="errorRequest"></param>
     /// <param name="funcoes"></param>
-    /// <param name="licenca"></param>
     /// <param name="varAmbiente"></param>
     public UsuarioController(IUnitOfWork uof,
                              UserManager<ApplicationUser> userManager,

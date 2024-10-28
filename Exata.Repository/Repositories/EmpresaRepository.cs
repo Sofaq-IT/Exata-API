@@ -59,6 +59,13 @@ public class EmpresaRepository : IEmpresa
         return _ctx.Empresa.Any(x => x.EmpresaID == id);
     }
 
+    public bool Existe(string cpfCnpj)
+    {
+        cpfCnpj = cpfCnpj.Replace(".", "").Replace("/", "").Replace("-", "");
+
+        return _ctx.Empresa.Any(x => x.CpfCnpj == cpfCnpj);
+    }
+
     public async Task<PagedList<Empresa>> Listar(PaginacaoDTO paginacao)
     {
         string tabela = "Empresa";

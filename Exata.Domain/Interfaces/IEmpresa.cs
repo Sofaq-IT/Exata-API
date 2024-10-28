@@ -11,6 +11,7 @@ namespace Exata.Domain.Interfaces
         Task<Empresa> Excluir(int id);
         Task<Empresa> Abrir(int id);
         bool Existe(int id);
+        bool Existe(string cpfCnpj);
         Task<PagedList<Empresa>> Listar(PaginacaoDTO paginacao);
         Task<List<Empresa>> Listar();
     }
