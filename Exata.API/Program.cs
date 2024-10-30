@@ -152,6 +152,7 @@ builder.Services.AddScoped<IControllerAction, ControllerActionRepository>();
 builder.Services.AddScoped<ICripto>(sp => new Cripto(sChave, sVetor));
 builder.Services.AddScoped<IEmail, Email>();
 builder.Services.AddScoped<IEmpresa, EmpresaRepository>();
+builder.Services.AddScoped<IEmpresaCliente, EmpresaClienteRepository>();
 builder.Services.AddScoped<IErrorRequest, ErrorRequest>();
 builder.Services.AddScoped<IFuncoes, Funcoes>();
 builder.Services.AddScoped<ILogRequisicao, LogRequisicoesRepository>();

@@ -56,6 +56,8 @@ public class EmpresaController : ControllerBase
 
         Empresa empresaNova = await _uof.Empresa.Inserir(empresa);
 
+        await _uof.Commit();
+
         ApplicationUser user = new()
         {
             Email = empresa.Email,
@@ -65,7 +67,8 @@ public class EmpresaController : ControllerBase
             Nome = empresa.ApelidoNomeFantasia,
             Ativo = true,
             booNovo = true,
-            PhoneNumber = empresa.Telefone
+            PhoneNumber = empresa.Telefone,
+            EmpresaID = empresaNova.EmpresaID
         };
 
         var result = await _userManager.CreateAsync(user, Helpers.Funcoes.GenerateRandomString(10));
@@ -141,10 +144,7 @@ public class EmpresaController : ControllerBase
 
         PagedList<Empresa> empresas = await _uof.Empresa.Listar(_funcoes.Paginacao);
 
-        if (empresas.TotalPaginas == 0)
-            return NotFound(_error.NotFound());
-
-        if (_funcoes.Paginacao.Pagina > empresas.TotalPaginas)
+        if (empresas.TotalPaginas > 0 && _funcoes.Paginacao.Pagina > empresas.TotalPaginas)
         {
             _funcoes.Paginacao.Pagina = empresas.TotalPaginas;
             empresas = await _uof.Empresa.Listar(_funcoes.Paginacao);

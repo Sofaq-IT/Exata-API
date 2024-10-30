@@ -4,6 +4,7 @@ using Exata.Domain.Entities;
 using Exata.Domain.Interfaces;
 using Exata.Domain.Paginacao;
 using Exata.Repository.Context;
+using System.Linq;
 
 namespace Exata.Repository.Repositories;
 
@@ -66,6 +67,16 @@ public class ClienteRepository : ICliente
 
         IQueryable<Cliente> iClientes = _ctx.Cliente.AsNoTracking();
 
+        var userID = await _usuario.UserID();
+
+        var user = _ctx.Users.Where(x => x.Id == userID).FirstOrDefault();
+
+        if (user != null && user.EmpresaID != null)
+            iClientes = from c in iClientes
+                        join ec in _ctx.EmpresaCliente on c.ClienteID equals ec.ClienteID
+                        where ec.EmpresaID == user.EmpresaID
+                        select c;
+
         if (paginacao.Ativos != null)
             iClientes = iClientes.Where(x => x.Ativo == paginacao.Ativos);
 
@@ -120,5 +131,13 @@ public class ClienteRepository : ICliente
             .Where(x => x.Ativo == true)
             .OrderBy(x => x.NomeRazaoSocial)
             .ToListAsync();
+    }
+
+    public async Task<Cliente> BuscarPorCpfCnpj(string cpfCnpj)
+    {
+        return await _ctx.Cliente
+            .AsNoTracking()
+            .Where(x => x.CpfCnpj == cpfCnpj)
+            .FirstOrDefaultAsync();
     }
 }

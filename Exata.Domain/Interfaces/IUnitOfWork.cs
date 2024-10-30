@@ -10,6 +10,8 @@ public interface IUnitOfWork
 
     IEmpresa Empresa { get; }
 
+    IEmpresaCliente EmpresaCliente { get; }
+
     ILogRequisicao LogRequisicao { get; }
 
     IPerfil Perfil { get; }

@@ -24,6 +24,10 @@ public class ApiContext : IdentityDbContext<ApplicationUser>
             .ToTable("ControllerAction")
             .HasKey(c => new { c.Controller, c.Metodo, c.Action });
 
+        modelBuilder.Entity<EmpresaCliente>()
+            .ToTable("EmpresaCliente")
+            .HasKey(c => new { c.EmpresaID, c.ClienteID });
+
         modelBuilder.Entity<LogRequisicao>()
             .ToTable("LogRequisicoes")
             .HasKey(c => new { c.Data, c.UsuarioID, c.Metodo, c.Controller, c.Action });
@@ -55,7 +59,7 @@ public class ApiContext : IdentityDbContext<ApplicationUser>
             .HasPrincipalKey(b => new { b.PerfilID });
 
         #endregion
-                
+
         #region "Perfil"
 
         modelBuilder.Entity<Perfil>()
@@ -101,6 +105,7 @@ public class ApiContext : IdentityDbContext<ApplicationUser>
     public DbSet<Cliente> Cliente { get; set; }
     public DbSet<ControllerAction> ControllerAction { get; set; }
     public DbSet<Empresa> Empresa { get; set; }
+    public DbSet<EmpresaCliente> EmpresaCliente { get; set; }
     public DbSet<LogRequisicao> LogRequisicoes { get; set; }
     public DbSet<Perfil> Perfil { get; set; }
     public DbSet<PerfilControllerAction> PerfilControllerAction { get; set; }

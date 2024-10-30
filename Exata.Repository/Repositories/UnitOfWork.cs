@@ -9,6 +9,7 @@ public class UnitOfWork : IUnitOfWork
     private ICliente _cliente;
     private IControllerAction _controllerAction;
     private IEmpresa _empresa;
+    private IEmpresaCliente _empresaCliente;
     private ILogRequisicao _logRequisicao;
     private IPerfil _perfil;
     private IPerfilControllerAction _perfilControllerAction;
@@ -58,6 +59,14 @@ public class UnitOfWork : IUnitOfWork
         get
         {
             return _empresa = _empresa ?? new EmpresaRepository(_ctx, _campo, _usuario);
+        }
+    }
+
+    public IEmpresaCliente EmpresaCliente
+    {
+        get
+        {
+            return _empresaCliente = _empresaCliente ?? new EmpresaClienteRepository(_ctx);
         }
     }
 

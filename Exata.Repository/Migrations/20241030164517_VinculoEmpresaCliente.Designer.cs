@@ -4,6 +4,7 @@ using Exata.Repository.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Exata.Repository.Migrations
 {
     [DbContext(typeof(ApiContext))]
-    partial class ApiContextModelSnapshot : ModelSnapshot
+    [Migration("20241030164517_VinculoEmpresaCliente")]
+    partial class VinculoEmpresaCliente
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,9 +61,6 @@ namespace Exata.Repository.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<int?>("EmpresaID")
-                        .HasColumnType("int");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -114,8 +114,6 @@ namespace Exata.Repository.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClienteID");
-
-                    b.HasIndex("EmpresaID");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -361,15 +359,15 @@ namespace Exata.Repository.Migrations
 
             modelBuilder.Entity("Exata.Domain.Entities.EmpresaCliente", b =>
                 {
-                    b.Property<int>("EmpresaID")
-                        .HasColumnType("int");
-
                     b.Property<int>("ClienteID")
                         .HasColumnType("int");
 
-                    b.HasKey("EmpresaID", "ClienteID");
+                    b.Property<int>("EmpresaID")
+                        .HasColumnType("int");
 
                     b.HasIndex("ClienteID");
+
+                    b.HasIndex("EmpresaID");
 
                     b.ToTable("EmpresaCliente", (string)null);
                 });
@@ -618,17 +616,11 @@ namespace Exata.Repository.Migrations
                         .WithMany()
                         .HasForeignKey("ClienteID");
 
-                    b.HasOne("Exata.Domain.Entities.Empresa", "Empresa")
-                        .WithMany()
-                        .HasForeignKey("EmpresaID");
-
                     b.HasOne("Exata.Domain.Entities.Perfil", "Perfil")
                         .WithMany("Users")
                         .HasForeignKey("PerfilID");
 
                     b.Navigation("Cliente");
-
-                    b.Navigation("Empresa");
 
                     b.Navigation("Perfil");
                 });

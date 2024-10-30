@@ -44,6 +44,8 @@ public class UsuarioRepository : IUsuario
         IQueryable<ApplicationUser> iUsuarios = _ctx.Users
             .AsNoTracking()
             .Include(x => x.Perfil)
+            .Include(x => x.Cliente)
+            .Include(x => x.Empresa)
             .Where(x => x.UserName != idAdm);
 
         if (paginacao.Ativos != null)

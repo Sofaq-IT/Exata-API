@@ -31,11 +31,15 @@ public class ApplicationUser : IdentityUser
 
     public int? ClienteID { get; set; }
 
+    public int? EmpresaID { get; set; }
+
     public int? PerfilID { get; set; }
 
     public UsuarioAvatar UsuarioAvatar { get; set; }
 
     public virtual Cliente Cliente { get; set; }
+
+    public virtual Empresa Empresa { get; set; }
 
     public virtual Perfil Perfil { get; set; }
 

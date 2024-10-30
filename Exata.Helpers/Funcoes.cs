@@ -74,6 +74,7 @@ public class Funcoes : IFuncoes
 
         // Garantir pelo menos um de cada tipo de caractere necessário
         result.Append(uppercase[random.Next(uppercase.Length)]);
+        result.Append(lowercase[random.Next(lowercase.Length)]);
         result.Append(digits[random.Next(digits.Length)]);
         result.Append(specialChars[random.Next(specialChars.Length)]);
 

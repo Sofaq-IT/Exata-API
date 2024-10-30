@@ -10,6 +10,7 @@ namespace Exata.Domain.Interfaces
         Task<Cliente> Atualizar(Cliente cliente);
         Task<Cliente> Excluir(int id);
         Task<Cliente> Abrir(int id);
+        Task<Cliente> BuscarPorCpfCnpj(string cpfCnpj);
         bool Existe(int id);
         Task<PagedList<Cliente>> Listar(PaginacaoDTO paginacao);
         Task<List<Cliente>> Listar();

@@ -4,6 +4,7 @@ using Exata.Repository.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Exata.Repository.Migrations
 {
     [DbContext(typeof(ApiContext))]
-    partial class ApiContextModelSnapshot : ModelSnapshot
+    [Migration("20241030165747_VinculoEmpresaUsuario")]
+    partial class VinculoEmpresaUsuario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -361,15 +364,15 @@ namespace Exata.Repository.Migrations
 
             modelBuilder.Entity("Exata.Domain.Entities.EmpresaCliente", b =>
                 {
-                    b.Property<int>("EmpresaID")
-                        .HasColumnType("int");
-
                     b.Property<int>("ClienteID")
                         .HasColumnType("int");
 
-                    b.HasKey("EmpresaID", "ClienteID");
+                    b.Property<int>("EmpresaID")
+                        .HasColumnType("int");
 
                     b.HasIndex("ClienteID");
+
+                    b.HasIndex("EmpresaID");
 
                     b.ToTable("EmpresaCliente", (string)null);
                 });
