@@ -109,5 +109,6 @@ public class ApiContext : IdentityDbContext<ApplicationUser>
     public DbSet<LogRequisicao> LogRequisicoes { get; set; }
     public DbSet<Perfil> Perfil { get; set; }
     public DbSet<PerfilControllerAction> PerfilControllerAction { get; set; }
+    public DbSet<Upload> Upload { get; set; }
     public DbSet<UsuarioAvatar> UsuarioAvatar { get; set; }
 }
