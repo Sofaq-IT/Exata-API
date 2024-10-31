@@ -7,6 +7,7 @@ using Exata.Helpers.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Exata.Domain.Enums;
 using Exata.Helpers;
+using DocumentFormat.OpenXml.Office2010.Excel;
 
 namespace Exata.API.Controllers;
 
@@ -139,6 +140,26 @@ public class UploadController : ControllerBase
 
             await _upload.Atualizar(upload);
 
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet, Route("Detalhes/{uploadID}")]
+    public virtual async Task<IActionResult> Detalhes(int uploadID)
+    {
+        try
+        {
+            var upload = await _upload.Abrir(uploadID);
+
+            if (upload == null)
+                return NotFound("Não localizamos um Upload com o ID informado!");
+
+            var excelData = await _blobStorage.ReadExcelFileAsync("uploads-realizados/" + upload.NomeArquivoArmazenado, upload);
+
+            return Ok(excelData);
+        }
+        catch (Exception ex)
+        {
             return BadRequest(ex.Message);
         }
     }

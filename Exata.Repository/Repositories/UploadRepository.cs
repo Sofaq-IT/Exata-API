@@ -90,6 +90,22 @@ public class UploadRepository : IUpload
 
     public async Task<List<Upload>> Listar()
     {
+        var userID = await _usuario.UserID();
+
+        var user = _ctx.Users.Where(x => x.Id == userID).FirstOrDefault();
+
+        if (user.EmpresaID != null)
+        {
+            return await (from up in _ctx.Upload
+                          join ec in _ctx.EmpresaCliente on up.ClienteId equals ec.ClienteID
+                          where ec.EmpresaID == user.EmpresaID
+                          select up)
+                         .AsNoTracking()
+                         .Include("Cliente")
+                         .OrderByDescending(x => x.DataCadastro)
+                         .ToListAsync();
+        }
+
         return await _ctx.Upload
             .AsNoTracking()
             .Include("Cliente")

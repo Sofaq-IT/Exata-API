@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Exata.Domain.Interfaces;
 using Exata.Repository.Context;
+using Exata.Helpers.Interfaces;
 
 namespace Exata.Repository.Repositories;
 
