@@ -10,13 +10,11 @@ namespace Exata.Repository.Repositories;
 public class UploadRepository : IUpload
 {
     private readonly ApiContext _ctx;
-    private readonly ICampo _campo;
     private readonly IUsuario _usuario;
 
-    public UploadRepository(ApiContext context, ICampo campo, IUsuario usuario)
+    public UploadRepository(ApiContext context, IUsuario usuario)
     {
         _ctx = context;
-        _campo = campo;
         _usuario = usuario;
     }
 
@@ -94,7 +92,16 @@ public class UploadRepository : IUpload
     {
         return await _ctx.Upload
             .AsNoTracking()
+            .Include("Cliente")
             .OrderByDescending(x => x.DataCadastro)
             .ToListAsync();
+    }
+
+    public async Task<Upload> Abrir(int id)
+    {
+        return await _ctx.Upload
+            .AsNoTracking()
+            .Where(x => x.UploadID == id)
+            .FirstOrDefaultAsync();
     }
 }

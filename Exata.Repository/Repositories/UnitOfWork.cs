@@ -13,7 +13,8 @@ public class UnitOfWork : IUnitOfWork
     private ILogRequisicao _logRequisicao;
     private IPerfil _perfil;
     private IPerfilControllerAction _perfilControllerAction;
-    
+    private IUpload _upload;
+
     public ApiContext _ctx;
     public IHttpContextAccessor _httpContext;
     public ICampo _campo;
@@ -91,6 +92,14 @@ public class UnitOfWork : IUnitOfWork
         get
         {
             return _perfilControllerAction = _perfilControllerAction ?? new PerfilControllerActionRepository(_ctx);
+        }
+    }
+
+    public IUpload Upload
+    {
+        get
+        {
+            return _upload = _upload ?? new UploadRepository(_ctx, _usuario);
         }
     }
 

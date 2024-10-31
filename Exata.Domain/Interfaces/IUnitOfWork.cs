@@ -18,6 +18,8 @@ public interface IUnitOfWork
 
     IPerfilControllerAction PerfilControllerAction { get; }
 
+    IUpload Upload { get; }
+
     IUsuario Usuario { get; }
 
     Task Commit();

@@ -146,6 +146,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddScoped<IBlobStorage, BlobStorage>();
 builder.Services.AddScoped<ICampo, CampoRepository>();
 builder.Services.AddScoped<ICliente, ClienteRepository>();
 builder.Services.AddScoped<IControllerAction, ControllerActionRepository>();

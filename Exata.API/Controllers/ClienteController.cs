@@ -211,6 +211,18 @@ public class ClienteController : ControllerBase
     }
 
     /// <summary>
+    /// Retorna a Lista de Clientes
+    /// </summary>
+    /// <returns>Lista solicitada</returns>
+    [HttpGet, Route("ListarTodos")]
+    public async Task<IActionResult> ListarTodos()
+    {
+        List<Cliente> clientes = await _uof.Cliente.Listar();
+
+        return Ok(clientes);
+    }
+
+    /// <summary>
     /// Retorna a Lista de Campos utilizados na pesquisa e ordenação do GRID Cliente
     /// </summary>
     /// <returns>Lista de Campos</returns>

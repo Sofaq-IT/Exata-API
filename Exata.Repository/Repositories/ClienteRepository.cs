@@ -126,8 +126,19 @@ public class ClienteRepository : ICliente
 
     public async Task<List<Cliente>> Listar()
     {
-        return await _ctx.Cliente
-            .AsNoTracking()
+        IQueryable<Cliente> iClientes = _ctx.Cliente.AsNoTracking();
+
+        var userID = await _usuario.UserID();
+
+        var user = _ctx.Users.Where(x => x.Id == userID).FirstOrDefault();
+
+        if (user != null && user.EmpresaID != null)
+            iClientes = from c in iClientes
+                        join ec in _ctx.EmpresaCliente on c.ClienteID equals ec.ClienteID
+                        where ec.EmpresaID == user.EmpresaID
+                        select c;
+
+        return await iClientes
             .Where(x => x.Ativo == true)
             .OrderBy(x => x.NomeRazaoSocial)
             .ToListAsync();
