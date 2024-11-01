@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Exata.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
 
@@ -60,7 +61,10 @@ namespace Exata.Domain.Entities
         public string Estado { get; set; }
 
         [Required]
-        public bool Ativo { get; set; }        
+        public bool Ativo { get; set; }
+
+        [Required]
+        public PlanoEnum Plano { get; set; }
 
     }
 }
