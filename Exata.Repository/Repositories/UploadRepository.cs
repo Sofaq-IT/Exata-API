@@ -96,10 +96,8 @@ public class UploadRepository : IUpload
 
         if (user.EmpresaID != null)
         {
-            return await (from up in _ctx.Upload
-                          join ec in _ctx.EmpresaCliente on up.ClienteId equals ec.ClienteID
-                          where ec.EmpresaID == user.EmpresaID
-                          select up)
+            return await _ctx.Upload
+                         .Where(x => x.UserCadastro == user.Id)
                          .AsNoTracking()
                          .Include("Cliente")
                          .OrderByDescending(x => x.DataCadastro)
