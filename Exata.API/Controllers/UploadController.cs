@@ -9,6 +9,7 @@ using Exata.Domain.Enums;
 using Exata.Helpers;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using Exata.Domain.DTO;
+using Newtonsoft.Json;
 
 namespace Exata.API.Controllers;
 
@@ -71,13 +72,15 @@ public class UploadController : ControllerBase
     }
 
     [HttpPost("ImportarArquivo")]
-    public async Task<IActionResult> ImportarArquivo([FromForm] UploadDTO uploadDTO, [FromForm] IFormFile file)
+    public async Task<IActionResult> ImportarArquivo([FromForm] string uploadDTO, [FromForm] IFormFile file)
     {
         if (file == null || file.Length == 0)
             return BadRequest("Nenhum arquivo enviado.");
 
         try
         {
+            var up = JsonConvert.DeserializeObject<UploadDTO>(uploadDTO);
+
             var fileInfo = new FileInfo(file.FileName);
 
             var fileName = string.Format("{0:yyyyMMddHHmmss}", DateTime.Now) + fileInfo.Extension;
@@ -86,8 +89,8 @@ public class UploadController : ControllerBase
 
             var upload = new Upload()
             {
-                ClienteId = uploadDTO.ClienteID,
-                DataReferencia = uploadDTO.DataReferencia,
+                ClienteId = up.ClienteID,
+                DataReferencia = up.DataReferencia,
                 NomeArquivoArmazenado = fileName,
                 NomeArquivoEntrada = file.FileName,
                 StatusAtual = StatusUploadEnum.Importado,
