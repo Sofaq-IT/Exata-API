@@ -7,6 +7,11 @@ namespace Exata.Domain.Entities
     [Table("Upload")]
     public class Upload : Base
     {
+        public Upload()
+        {
+            DataReferencia = DateTime.Now;
+        }
+
         [Key]
         public int UploadID { get; set; }
 
@@ -33,6 +38,9 @@ namespace Exata.Domain.Entities
 
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
         public int ClienteId { get; set; }
+
+        [Required(ErrorMessage = "O campo {0} é obrigatório")]
+        public DateTime DataReferencia { get; set; }
 
         public virtual Cliente Cliente { get; set; }
     }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Exata.Domain.Enums;
 using Exata.Helpers;
 using DocumentFormat.OpenXml.Office2010.Excel;
+using Exata.Domain.DTO;
 
 namespace Exata.API.Controllers;
 
@@ -70,7 +71,7 @@ public class UploadController : ControllerBase
     }
 
     [HttpPost("ImportarArquivo/{clienteID}")]
-    public async Task<IActionResult> ImportarArquivo(int clienteID, IFormFile file)
+    public async Task<IActionResult> ImportarArquivo([FromBody] UploadDTO uploadDTO, IFormFile file)
     {
         if (file == null || file.Length == 0)
             return BadRequest("Nenhum arquivo enviado.");
@@ -85,7 +86,8 @@ public class UploadController : ControllerBase
 
             var upload = new Upload()
             {
-                ClienteId = clienteID,
+                ClienteId = uploadDTO.ClienteID,
+                DataReferencia = uploadDTO.DataReferencia,
                 NomeArquivoArmazenado = fileName,
                 NomeArquivoEntrada = file.FileName,
                 StatusAtual = StatusUploadEnum.Importado,
