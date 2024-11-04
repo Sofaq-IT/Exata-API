@@ -71,7 +71,7 @@ public class UploadController : ControllerBase
     }
 
     [HttpPost("ImportarArquivo")]
-    public async Task<IActionResult> ImportarArquivo([FromBody] UploadDTO uploadDTO, IFormFile file)
+    public async Task<IActionResult> ImportarArquivo([FromForm] UploadDTO uploadDTO, [FromForm] IFormFile file)
     {
         if (file == null || file.Length == 0)
             return BadRequest("Nenhum arquivo enviado.");
