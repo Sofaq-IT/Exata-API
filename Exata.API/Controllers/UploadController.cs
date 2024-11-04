@@ -70,7 +70,7 @@ public class UploadController : ControllerBase
         }
     }
 
-    [HttpPost("ImportarArquivo/{clienteID}")]
+    [HttpPost("ImportarArquivo")]
     public async Task<IActionResult> ImportarArquivo([FromBody] UploadDTO uploadDTO, IFormFile file)
     {
         if (file == null || file.Length == 0)

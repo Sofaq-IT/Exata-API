@@ -42,6 +42,12 @@ namespace Exata.Domain.Entities
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
         public DateTime DataReferencia { get; set; }
 
+        [NotMapped]
+        public string DataReferenciaFormatada
+        {
+            get { return DataReferencia.ToString("dd/MM/yyyy HH:mm:ss"); }
+        }
+
         public virtual Cliente Cliente { get; set; }
     }
 }
