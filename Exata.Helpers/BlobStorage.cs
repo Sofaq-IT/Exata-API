@@ -38,32 +38,29 @@ namespace Exata.Helpers
                 var headers = new List<string>();
                 var data = new List<Dictionary<string, string>>();
 
-                //int linhaCabecalho = 0;
-                
-                //for (int linha = 0; linha < rows.Count(); linha++)
-                //{
-                //    foreach (var headerCell in rows.First().Cells())
-                //    {
-                //        if (headerCell.GetValue<string>() == "CLIENTE")
-                //        {
-                //            linhaCabecalho = linha;
-                //            break;
-                //        }                            
-                //    }
-                //}
-                
                 // Lê os cabeçalhos da primeira linha
                 foreach (var headerCell in rows.First().Cells())
                 {
                     headers.Add(headerCell.GetValue<string>());
                 }
 
-                //string[] colunasEsperadas = { "NOME", "CPF", "E-MAIL", "NOME TITULAR", "CPF/CNPJ TITULAR", "BANCO", "AGENCIA", "CONTA", "DIGITO CONTA", "CHAVE PIX", "VALOR" };
+                string[] colunasPrincipais = { "ID AMOSTRA LAB", "FAZENDA", "TALHÃO", "GLEBA", "PROFUNDIDADE", "PONTO DE COLETA" };
+                string[] colunasElementos = { "pH H2O", "pH CaCl", "pH SMP", "P meh", "P rem", "P res", "P total", "Na", "K", "S", "Ca", "Mg", "Al", "H + Al", "MO", "CO", "B", "Cu", "Fe", "Mn", "Zn", "SB", "t", "T ", "V", "m", "Ca/Mg", "Ca/K", "Mg/K", "(Ca+Mg)/K", "Ca/t ", "Mg/t ", "Ca/T", "Mg/T", "K/T ", "Na/T", "(H+Al)/T", "(Ca+Mg)/T", "(Ca+Mg+K)/T", "(Ca+Mg+K+Na)/T", "Argila", "Silte", "Areia Total", "Areia Grossa", "Areia Fina" };
 
-                //var containsAll = colunasEsperadas.All(item => headers.Contains(item));
+                var contemPrincipais = colunasPrincipais.All(item => headers.Contains(item));
 
-                //if (!containsAll)
-                //    throw new Exception("Arquivo não contem todas as colunas necessárias");
+                if (!contemPrincipais)
+                    throw new Exception("Arquivo não contem todas as colunas obrigatórias. Não é possível seguir com a importação");
+
+                List<string> validaElementos = headers.Except(colunasPrincipais).Except(colunasElementos).ToList();
+
+                if (validaElementos.Count > 0)
+                    throw new Exception($"Arquivo contém colunas não mapeadas. Não é possível seguir com a importação. (Colunas incorretas: {string.Join(", ", validaElementos)})");
+
+
+                int linha = 3;
+
+                string[] colunasObrigatorias = { "ID AMOSTRA LAB", "FAZENDA", "TALHÃO", "PROFUNDIDADE", "PONTO DE COLETA" };
 
                 // Lê os dados a partir da segunda linha
                 foreach (var dataRow in rows.Skip(2))
@@ -73,15 +70,22 @@ namespace Exata.Helpers
 
                     foreach (var cell in dataRow.Cells())
                     {
-                        rowData[headers[columnIndex]] = cell.GetValue<string>();
+                        string cellValue = cell.GetValue<string>();
+
+                        rowData[headers[columnIndex]] = cellValue;
+
+                        if (colunasObrigatorias.Contains(headers[columnIndex]) && string.IsNullOrEmpty(cellValue))
+                            throw new Exception($"Arquivo contém informações obrigatórias não preenchidas. (Linha: {linha}, Coluna: {headers[columnIndex]})");
 
                         columnIndex++;
                     }
 
                     data.Add(rowData);
+
+                    linha++;
                 }
 
-                if (rows.Skip(1).Count() == 0)
+                if (rows.Skip(2).Count() == 0)
                     throw new Exception("Arquivo não contém registros");
 
                 upload.QtdeRegistros = rows.Skip(1).Count();

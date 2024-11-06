@@ -2,12 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Exata.Domain.Entities;
 using Exata.Domain.Interfaces;
-using Exata.Domain.Paginacao;
 using Exata.Helpers.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Exata.Domain.Enums;
-using Exata.Helpers;
-using DocumentFormat.OpenXml.Office2010.Excel;
 using Exata.Domain.DTO;
 using Newtonsoft.Json;
 
@@ -71,7 +68,8 @@ public class UploadController : ControllerBase
         }
     }
 
-    [HttpPost("ImportarArquivo")]
+    [HttpPost, Route("ImportarArquivo")]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public async Task<IActionResult> ImportarArquivo([FromForm] string uploadDTO, [FromForm] IFormFile file)
     {
         if (file == null || file.Length == 0)
