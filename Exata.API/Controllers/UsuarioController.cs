@@ -8,6 +8,8 @@ using Exata.Domain.Paginacao;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Net;
 
 namespace Exata.API.Controllers;
 
@@ -25,6 +27,7 @@ public class UsuarioController : ControllerBase
     private readonly IErrorRequest _error;
     private readonly IVariaveisAmbiente _varAmbiente;
     private readonly IFuncoes _funcoes;
+    private readonly IEmail _email;
 
     /// <summary>
     /// Controller utilizado para manter dados de Usuários
@@ -38,7 +41,8 @@ public class UsuarioController : ControllerBase
                              UserManager<ApplicationUser> userManager,
                              IErrorRequest errorRequest,
                              IFuncoes funcoes,
-                             IVariaveisAmbiente varAmbiente)
+                             IVariaveisAmbiente varAmbiente,
+                             IEmail email)
     {
         _uof = uof;
         _userManager = userManager;
@@ -46,6 +50,7 @@ public class UsuarioController : ControllerBase
         _error.Titulo = "Usuário";
         _varAmbiente = varAmbiente;
         _funcoes = funcoes;
+        _email = email;
     }
 
     /// <summary>
@@ -86,6 +91,9 @@ public class UsuarioController : ControllerBase
         }
 
         await _uof.Commit();
+
+        EnviarEmailNovoUsuario(usuario.UserName, usuario.Email, usuario.Senha);
+
         return Ok(usuario);
     }
 
@@ -350,5 +358,29 @@ public class UsuarioController : ControllerBase
 
         await _uof.Commit();
         return Ok(usuarioAvatarNovo);
+    }
+
+    private void EnviarEmailNovoUsuario(string login, string email, string senha)
+    {
+        var webRequest = WebRequest.Create(@"https://pontualmainstorage.blob.core.windows.net/exata/novo-usuario.html");
+
+        using (var response = webRequest.GetResponse())
+        using (var content = response.GetResponseStream())
+        using (var reader = new StreamReader(content))
+        {
+            var body = reader.ReadToEnd();
+
+            body = body.Replace("{{login}}", login);
+            body = body.Replace("{{email}}", email);
+            body = body.Replace("{{senha}}", senha);
+
+            _email.Enviar(new EmailDTO()
+            {
+                Assunto = "PLATAFORMA EXATA - DADOS DE ACESSO",
+                CorpoEmail = body,
+                Destinatarios = [email],
+                Html = true
+            });
+        }
     }
 }
