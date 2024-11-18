@@ -4,6 +4,7 @@ using Exata.Domain.Interfaces;
 using Exata.Helpers.Interfaces;
 using Exata.Repository.Context;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace Exata.Repository.Repositories;
 
@@ -26,6 +27,13 @@ public class AmostraRepository : IAmostra
         amostra.booNovo = true;
         _ctx.Add(amostra);
         return amostra;
+    }
+
+    public async Task<List<Upload>> ListarAnexos(Guid amostraId)
+    {
+        return await _ctx.Upload
+                .Where(x => x.AmostraId == amostraId && x.TipoUpload == TipoUploadEnum.Anexo)
+                .ToListAsync();
     }
 
     public async Task SalvarAnexos(IFormFile[] attachments, Guid amostraId, DateTime dataReferencia)
@@ -61,7 +69,7 @@ public class AmostraRepository : IAmostra
                     upload.UrlStorage = await _blobStorage.UploadFileAsync(stream, fullPath);
                 }
 
-                _ctx.Add(upload);                
+                _ctx.Add(upload);
             }
         }
     }

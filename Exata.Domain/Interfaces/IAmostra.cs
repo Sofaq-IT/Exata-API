@@ -7,5 +7,6 @@ namespace Exata.Domain.Interfaces
     {
         Task<Amostra> Inserir(Amostra amostra);
         Task SalvarAnexos(IFormFile[] attachments, Guid amostraId, DateTime dataReferencia);
+        Task<List<Upload>> ListarAnexos(Guid amostraId);
     }
 }

@@ -75,6 +75,26 @@ public class UploadController : ControllerBase
         }
     }
 
+    [HttpGet, Route("ListarAnexos/{uploadId}")]
+    public virtual async Task<IActionResult> Listar(int uploadId)
+    {
+        try
+        {
+            var upload = await _uof.Upload.Abrir(uploadId);
+
+            if (upload == null)
+                return NotFound("Upload não localizado");
+
+            var anexos = await _uof.Amostra.ListarAnexos(upload.AmostraId);
+
+            return Ok(anexos);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     [HttpPost, Route("ImportarArquivo")]
     public async Task<IActionResult> ImportarArquivo([FromForm] string uploadDTO, [FromForm] IFormFile file, [FromForm] IFormFile[] attachments)
     {
