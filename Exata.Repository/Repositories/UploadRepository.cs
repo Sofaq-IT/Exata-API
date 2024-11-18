@@ -4,6 +4,7 @@ using Exata.Domain.Entities;
 using Exata.Domain.Interfaces;
 using Exata.Domain.Paginacao;
 using Exata.Repository.Context;
+using Exata.Domain.Enums;
 
 namespace Exata.Repository.Repositories;
 
@@ -97,7 +98,7 @@ public class UploadRepository : IUpload
         if (user.EmpresaID != null)
         {
             return await _ctx.Upload
-                         .Where(x => x.UserCadastro == user.Id)
+                         .Where(x => x.UserCadastro == user.Id && x.TipoUpload == TipoUploadEnum.Resultado)
                          .AsNoTracking()
                          .Include("Amostra.Cliente")
                          .OrderByDescending(x => x.DataCadastro)
@@ -105,6 +106,7 @@ public class UploadRepository : IUpload
         }
 
         return await _ctx.Upload
+            .Where(x => x.TipoUpload == TipoUploadEnum.Resultado)
             .AsNoTracking()
             .Include("Amostra.Cliente")
             .OrderByDescending(x => x.DataCadastro)

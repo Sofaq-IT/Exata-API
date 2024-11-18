@@ -9,6 +9,7 @@ public class UnitOfWork : IUnitOfWork
 {
     private IAmostra _amostra;
     private IAmostraResultado _amostraResultado;
+    private IBlobStorage _blobStorage;
     private ICliente _cliente;
     private IControllerAction _controllerAction;
     private IEmpresa _empresa;
@@ -26,19 +27,21 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(ApiContext ctx,
                       IHttpContextAccessor httpContextAccessor,
                       ICampo campo,
-                      IUsuario usuario)
+                      IUsuario usuario,
+                      IBlobStorage blobStorage)
     {
         _ctx = ctx;
         _httpContext = httpContextAccessor;
         _campo = campo;
         _usuario = usuario;
+        _blobStorage = blobStorage;
     }
 
     public IAmostra Amostra
     {
         get
         {
-            return _amostra = _amostra ?? new AmostraRepository(_ctx, _usuario);
+            return _amostra = _amostra ?? new AmostraRepository(_ctx, _usuario, _blobStorage);
         }
     }
 

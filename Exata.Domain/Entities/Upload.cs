@@ -41,6 +41,7 @@ namespace Exata.Domain.Entities
 
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
         public DateTime DataReferencia { get; set; }
+        public TipoUploadEnum TipoUpload { get; set; }
 
         [NotMapped]
         public string DataReferenciaFormatada

@@ -16,6 +16,7 @@ namespace Exata.API.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class UploadController : ControllerBase
 {
     private readonly IUnitOfWork _uof;
@@ -75,8 +76,7 @@ public class UploadController : ControllerBase
     }
 
     [HttpPost, Route("ImportarArquivo")]
-    [ApiExplorerSettings(IgnoreApi = true)]
-    public async Task<IActionResult> ImportarArquivo([FromForm] string uploadDTO, [FromForm] IFormFile file)
+    public async Task<IActionResult> ImportarArquivo([FromForm] string uploadDTO, [FromForm] IFormFile file, [FromForm] IFormFile[] attachments)
     {
         if (file == null || file.Length == 0)
             return BadRequest("Nenhum arquivo enviado.");
@@ -104,7 +104,8 @@ public class UploadController : ControllerBase
                 NomeArquivoArmazenado = fileName,
                 NomeArquivoEntrada = file.FileName,
                 StatusAtual = StatusUploadEnum.Importado,
-                Tamanho = file.Length / 1024
+                Tamanho = file.Length / 1024,
+                TipoUpload = TipoUploadEnum.Resultado
             };
 
             using (var stream = file.OpenReadStream())
@@ -112,13 +113,16 @@ public class UploadController : ControllerBase
                 upload.UrlStorage = await _blobStorage.UploadFileAsync(stream, fullPath);
             }
 
-            var excelData = await _blobStorage.ReadExcelFileAsync(fullPath, upload);
+            await _blobStorage.ReadExcelFileAsync(fullPath, upload);
 
             await _uof.Upload.Inserir(upload);
 
+            if (attachments != null || attachments.Length != 0)
+                await _uof.Amostra.SalvarAnexos(attachments, amostra.AmostraId, upload.DataReferencia);
+
             await _uof.Commit();
 
-            return Ok(excelData);
+            return Ok();
         }
         catch (Exception ex)
         {
@@ -155,6 +159,35 @@ public class UploadController : ControllerBase
             await _upload.Atualizar(upload);
 
             return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost, Route("ValidarArquivo")]
+    public async Task<IActionResult> ValidarArquivo([FromForm] IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("Nenhum arquivo enviado.");
+
+        try
+        {
+            var fileInfo = new FileInfo(file.FileName);
+
+            var fileName = string.Format("{0:yyyyMMddHHmmss}", DateTime.Now) + fileInfo.Extension;
+
+            var fullPath = "uploads-realizados/" + fileName;
+
+            using (var stream = file.OpenReadStream())
+            {
+                await _blobStorage.UploadFileAsync(stream, fullPath);
+            }
+
+            var excelData = await _blobStorage.ReadExcelFileAsync(fullPath);
+
+            return Ok(excelData);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("Erro ao validar arquivo: " + ex.Message);
         }
     }
 

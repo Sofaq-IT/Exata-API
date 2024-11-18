@@ -7,7 +7,7 @@ namespace Exata.Helpers.Interfaces
     {
         Task<string> UploadFileAsync(Stream fileStream, string fileName);
         Task<Stream> DownloadFileAsync(string fileName);
-        Task<List<Dictionary<string, string>>> ReadExcelFileAsync(string fileName, Upload upload);
+        Task<List<Dictionary<string, string>>> ReadExcelFileAsync(string fileName, Upload upload = null);
         Task<DataTable> ReadDataTableExcelFileAsync(string fileName);
     }
 }

@@ -27,7 +27,7 @@ namespace Exata.Helpers
             return downloadResponse.Value.Content;
         }
 
-        public async Task<List<Dictionary<string, string>>> ReadExcelFileAsync(string fileName, Upload upload)
+        public async Task<List<Dictionary<string, string>>> ReadExcelFileAsync(string fileName, Upload upload = null)
         {
             var fileStream = await DownloadFileAsync(fileName);
 
@@ -63,11 +63,11 @@ namespace Exata.Helpers
 
                 string[] colunasObrigatorias = { "ID AMOSTRA LAB", "FAZENDA", "TALHÃO", "PROFUNDIDADE", "PONTO DE COLETA" };
 
-                var rowData = new Dictionary<string, string>();
-
                 // Lê os dados a partir da segunda linha
                 foreach (var dataRow in rows.Skip(2))
                 {
+                    var rowData = new Dictionary<string, string>();
+
                     int columnIndex = 0;
 
                     foreach (var cell in dataRow.Cells())
@@ -90,7 +90,8 @@ namespace Exata.Helpers
                 if (rows.Skip(2).Count() == 0)
                     throw new Exception("Arquivo não contém registros");
 
-                upload.QtdeRegistros = rows.Skip(2).Count();
+                if (upload != null)
+                    upload.QtdeRegistros = rows.Skip(2).Count();
 
                 return data;
             }
