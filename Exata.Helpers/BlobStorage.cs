@@ -3,6 +3,7 @@ using ClosedXML.Excel;
 using Exata.Domain.Entities;
 using Exata.Helpers.Interfaces;
 using Microsoft.Extensions.Configuration;
+using System.Data;
 
 namespace Exata.Helpers
 {
@@ -62,10 +63,11 @@ namespace Exata.Helpers
 
                 string[] colunasObrigatorias = { "ID AMOSTRA LAB", "FAZENDA", "TALHÃO", "PROFUNDIDADE", "PONTO DE COLETA" };
 
+                var rowData = new Dictionary<string, string>();
+
                 // Lê os dados a partir da segunda linha
                 foreach (var dataRow in rows.Skip(2))
                 {
-                    var rowData = new Dictionary<string, string>();
                     int columnIndex = 0;
 
                     foreach (var cell in dataRow.Cells())
@@ -88,9 +90,52 @@ namespace Exata.Helpers
                 if (rows.Skip(2).Count() == 0)
                     throw new Exception("Arquivo não contém registros");
 
-                upload.QtdeRegistros = rows.Skip(1).Count();
+                upload.QtdeRegistros = rows.Skip(2).Count();
 
                 return data;
+            }
+        }
+
+        public async Task<DataTable> ReadDataTableExcelFileAsync(string fileName)
+        {
+            var fileStream = await DownloadFileAsync(fileName);
+
+            using (var workbook = new XLWorkbook(fileStream))
+            {
+                IXLWorksheet worksheet = workbook.Worksheets.First();
+
+                // Converter para DataTable
+                DataTable dataTable = new DataTable();
+                bool isFirstRow = true;
+
+                foreach (IXLRow row in worksheet.RowsUsed())
+                {
+                    if (isFirstRow)
+                    {
+                        // Adiciona as colunas
+                        foreach (IXLCell cell in row.Cells())
+                        {
+                            dataTable.Columns.Add(cell.Value.ToString());
+                        }
+                        isFirstRow = false;
+                    }
+                    else
+                    {
+                        // Adiciona as linhas
+                        DataRow dataRow = dataTable.NewRow();
+                        int columnIndex = 0;
+
+                        foreach (IXLCell cell in row.Cells(1, dataTable.Columns.Count))
+                        {
+                            dataRow[columnIndex] = cell.Value.ToString();
+                            columnIndex++;
+                        }
+
+                        dataTable.Rows.Add(dataRow);
+                    }
+                }
+
+                return dataTable;
             }
         }
 

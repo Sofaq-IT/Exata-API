@@ -147,20 +147,24 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddScoped<IBlobStorage, BlobStorage>();
+builder.Services.AddScoped<ICripto>(sp => new Cripto(sChave, sVetor));
+builder.Services.AddScoped<IEmail, Email>();
+builder.Services.AddScoped<IErrorRequest, ErrorRequest>();
+builder.Services.AddScoped<IFuncoes, Funcoes>();
+builder.Services.AddScoped<IToken, Token>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddScoped<IAmostra, AmostraRepository>();
+builder.Services.AddScoped<IAmostraResultado, AmostraResultadoRepository>();
 builder.Services.AddScoped<ICampo, CampoRepository>();
 builder.Services.AddScoped<ICliente, ClienteRepository>();
 builder.Services.AddScoped<IControllerAction, ControllerActionRepository>();
-builder.Services.AddScoped<ICripto>(sp => new Cripto(sChave, sVetor));
-builder.Services.AddScoped<IEmail, Email>();
 builder.Services.AddScoped<IEmpresa, EmpresaRepository>();
 builder.Services.AddScoped<IEmpresaCliente, EmpresaClienteRepository>();
-builder.Services.AddScoped<IErrorRequest, ErrorRequest>();
-builder.Services.AddScoped<IFuncoes, Funcoes>();
 builder.Services.AddScoped<ILogRequisicao, LogRequisicoesRepository>();
-builder.Services.AddScoped<IToken, Token>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUsuario, UsuarioRepository>();
 builder.Services.AddScoped<IUpload, UploadRepository>();
+
 builder.Services.AddScoped<IVariaveisAmbiente>(sp => new VariaveisAmbiente(
     sSecretKey,
     sValidAudience,

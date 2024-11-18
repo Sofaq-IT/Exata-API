@@ -2,6 +2,9 @@
 
 public interface IUnitOfWork
 {
+    IAmostra Amostra { get; }
+
+    IAmostraResultado AmostraResultado { get; }
     ICampo Campo { get; }
 
     ICliente Cliente { get; }

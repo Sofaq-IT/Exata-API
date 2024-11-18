@@ -99,14 +99,14 @@ public class UploadRepository : IUpload
             return await _ctx.Upload
                          .Where(x => x.UserCadastro == user.Id)
                          .AsNoTracking()
-                         .Include("Cliente")
+                         .Include("Amostra.Cliente")
                          .OrderByDescending(x => x.DataCadastro)
                          .ToListAsync();
         }
 
         return await _ctx.Upload
             .AsNoTracking()
-            .Include("Cliente")
+            .Include("Amostra.Cliente")
             .OrderByDescending(x => x.DataCadastro)
             .ToListAsync();
     }

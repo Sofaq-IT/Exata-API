@@ -4,6 +4,7 @@ using Exata.Repository.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Exata.Repository.Migrations
 {
     [DbContext(typeof(ApiContext))]
-    partial class ApiContextModelSnapshot : ModelSnapshot
+    [Migration("20241118132427_EntidadeAmostra")]
+    partial class EntidadeAmostra
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,196 +57,6 @@ namespace Exata.Repository.Migrations
                     b.HasIndex("ClienteId");
 
                     b.ToTable("Amostra");
-                });
-
-            modelBuilder.Entity("Exata.Domain.Entities.AmostraResultado", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Al")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("AmostraId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AreiaFina")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AreiaGrossa")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AreiaTotal")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Argila")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("B")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CO")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CTCEfetiva")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CTCTotal")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Ca")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CaCTCEfetiva")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CaCTCTotal")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CaK")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CaMg")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CaplusMgK")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CaplusMgT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CaplusMgplusKT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CaplusMgplusKplusNaT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Cu")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DataAlteracao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DataCadastro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Fazenda")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Fe")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Gleba")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HplusAl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HplusAlT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IdAmostraLab")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("K")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("KT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MO")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Mg")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MgCTCEfetiva")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MgCTCTotal")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MgK")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Mn")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Na")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NaT")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Pmeh")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PontoColeta")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Prem")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Pres")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Profundidade")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Ptotal")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("S")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SB")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Silite")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Talhao")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TipoInformacao")
-                        .IsRequired()
-                        .HasMaxLength(1)
-                        .HasColumnType("nvarchar(1)");
-
-                    b.Property<string>("UserAlteracao")
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("UserCadastro")
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("V")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Zn")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("m")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("pHCaCl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("pHH2O")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("pHSMP")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AmostraId");
-
-                    b.ToTable("AmostraResultado");
                 });
 
             modelBuilder.Entity("Exata.Domain.Entities.ApplicationUser", b =>
@@ -906,16 +719,6 @@ namespace Exata.Repository.Migrations
                         .IsRequired();
 
                     b.Navigation("Cliente");
-                });
-
-            modelBuilder.Entity("Exata.Domain.Entities.AmostraResultado", b =>
-                {
-                    b.HasOne("Exata.Domain.Entities.Amostra", "Amostra")
-                        .WithMany()
-                        .HasForeignKey("AmostraId")
-                        .IsRequired();
-
-                    b.Navigation("Amostra");
                 });
 
             modelBuilder.Entity("Exata.Domain.Entities.ApplicationUser", b =>

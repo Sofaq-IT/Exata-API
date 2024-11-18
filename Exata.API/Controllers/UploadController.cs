@@ -25,6 +25,8 @@ public class UploadController : ControllerBase
     private readonly IUsuario _usuario;
     private readonly IBlobStorage _blobStorage;
     private readonly IUpload _upload;
+    private readonly IAmostra _amostra;
+    private readonly IAmostraResultado _amostraResultado;
 
     /// <summary>
     /// Controller utilizado para manter dados do Cliente
@@ -40,7 +42,9 @@ public class UploadController : ControllerBase
                             IFuncoes funcoes,
                             IBlobStorage blobStorage,
                             IUpload upload,
-                            IUsuario usuario)
+                            IUsuario usuario,
+                            IAmostra amostra,
+                            IAmostraResultado amostraResultado)
     {
         _uof = uof;
         _userManager = userManager;
@@ -50,6 +54,8 @@ public class UploadController : ControllerBase
         _upload = upload;
         _blobStorage = blobStorage;
         _usuario = usuario;
+        _amostra = amostra;
+        _amostraResultado = amostraResultado;
 
     }
 
@@ -85,9 +91,15 @@ public class UploadController : ControllerBase
 
             var fullPath = "uploads-realizados/" + fileName;
 
+            var amostra = await _amostra.Inserir(new Amostra()
+            {
+                Codigo = string.Empty,
+                ClienteId = up.ClienteID
+            });
+
             var upload = new Upload()
             {
-                ClienteId = up.ClienteID,
+                AmostraId = amostra.AmostraId,
                 DataReferencia = up.DataReferencia,
                 NomeArquivoArmazenado = fileName,
                 NomeArquivoEntrada = file.FileName,
@@ -124,16 +136,15 @@ public class UploadController : ControllerBase
 
         try
         {
-            var excelData = await _blobStorage.ReadExcelFileAsync("uploads-realizados/" + upload.NomeArquivoArmazenado, upload);
+            var excelData = await _blobStorage.ReadDataTableExcelFileAsync("uploads-realizados/" + upload.NomeArquivoArmazenado);
 
-            foreach (var item in excelData)
-            {
-                // Implementar processamento do Arquivo
-            }
+            await _uof.AmostraResultado.InserirTodos(excelData, upload.AmostraId);
 
             upload.StatusAtual = StatusUploadEnum.Processado;
 
-            await _upload.Atualizar(upload);
+            await _uof.Upload.Atualizar(upload);
+
+            await _uof.Commit();
 
             return Ok(upload);
         }

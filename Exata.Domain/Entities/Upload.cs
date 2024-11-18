@@ -37,7 +37,7 @@ namespace Exata.Domain.Entities
         public StatusUploadEnum StatusAtual { get; set; }
 
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
-        public int ClienteId { get; set; }
+        public Guid AmostraId { get; set; }
 
         [Required(ErrorMessage = "O campo {0} é obrigatório")]
         public DateTime DataReferencia { get; set; }
@@ -48,6 +48,6 @@ namespace Exata.Domain.Entities
             get { return DataReferencia.ToString("dd/MM/yyyy HH:mm:ss"); }
         }
 
-        public virtual Cliente Cliente { get; set; }
+        public virtual Amostra Amostra { get; set; }
     }
 }

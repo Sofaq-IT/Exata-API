@@ -7,6 +7,8 @@ namespace Exata.Repository.Repositories;
 
 public class UnitOfWork : IUnitOfWork
 {
+    private IAmostra _amostra;
+    private IAmostraResultado _amostraResultado;
     private ICliente _cliente;
     private IControllerAction _controllerAction;
     private IEmpresa _empresa;
@@ -32,7 +34,23 @@ public class UnitOfWork : IUnitOfWork
         _usuario = usuario;
     }
 
-    public ICampo Campo 
+    public IAmostra Amostra
+    {
+        get
+        {
+            return _amostra = _amostra ?? new AmostraRepository(_ctx, _usuario);
+        }
+    }
+
+    public IAmostraResultado AmostraResultado
+    {
+        get
+        {
+            return _amostraResultado = _amostraResultado ?? new AmostraResultadoRepository(_ctx, _usuario);
+        }
+    }
+
+    public ICampo Campo
     {
         get
         {

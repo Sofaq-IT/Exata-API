@@ -101,6 +101,8 @@ public class ApiContext : IdentityDbContext<ApplicationUser>
         }
     }
 
+    public DbSet<Amostra> Amostra { get; set; }
+    public DbSet<AmostraResultado> AmostraResultado { get; set; }
     public DbSet<Campo> Campo { get; set; }
     public DbSet<Cliente> Cliente { get; set; }
     public DbSet<ControllerAction> ControllerAction { get; set; }
