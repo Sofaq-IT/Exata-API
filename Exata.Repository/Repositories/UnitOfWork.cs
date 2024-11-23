@@ -18,6 +18,7 @@ public class UnitOfWork : IUnitOfWork
     private IPerfil _perfil;
     private IPerfilControllerAction _perfilControllerAction;
     private IUpload _upload;
+    private IEmail _email;
 
     public ApiContext _ctx;
     public IHttpContextAccessor _httpContext;
@@ -129,7 +130,7 @@ public class UnitOfWork : IUnitOfWork
     {
         get
         {
-            return _usuario = _usuario ?? new UsuarioRepository(_ctx, _httpContext, _campo);
+            return _usuario = _usuario ?? new UsuarioRepository(_ctx, _httpContext, _campo, _email);
         }
     }
 
