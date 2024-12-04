@@ -25,4 +25,6 @@ public interface IUsuario
     Task<ApplicationUser> BuscarPorEmail(string email);
 
     Task<ApplicationUser> VerificarCodigo(VerificacaoCodigoDTO verificacaoCodigo);
+
+    void EnviarEmailNovoUsuario(string nome, string login, string email, string senha);
 }
