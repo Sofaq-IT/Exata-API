@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
 using Exata.Domain.Interfaces;
-using Exata.Repository.Context;
 using Exata.Helpers.Interfaces;
+using Exata.Repository.Context;
+
+using Microsoft.AspNetCore.Http;
 
 namespace Exata.Repository.Repositories;
 
@@ -19,6 +20,7 @@ public class UnitOfWork : IUnitOfWork
     private IPerfilControllerAction _perfilControllerAction;
     private IUpload _upload;
     private IEmail _email;
+    private IDashboard _dashboard;
 
     public ApiContext _ctx;
     public IHttpContextAccessor _httpContext;
@@ -131,6 +133,14 @@ public class UnitOfWork : IUnitOfWork
         get
         {
             return _usuario = _usuario ?? new UsuarioRepository(_ctx, _httpContext, _campo, _email);
+        }
+    }
+
+    public IDashboard Dashboard
+    {
+        get
+        {
+            return _dashboard = _dashboard ?? new DashboardRepository(_ctx, _httpContext);
         }
     }
 
