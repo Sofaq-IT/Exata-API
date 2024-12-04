@@ -1,19 +1,20 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
+
 using Exata.API.Filters;
+using Exata.Domain.DTO;
 using Exata.Domain.Entities;
 using Exata.Domain.Interfaces;
 using Exata.Helpers;
 using Exata.Helpers.Interfaces;
 using Exata.Repository.Context;
 using Exata.Repository.Repositories;
-using Exata.Domain.DTO;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +27,7 @@ string sUser = builder.Configuration["Parametros:BD:User"];
 string sPass = builder.Configuration["Parametros:BD:Pass"];
 string sCripto = builder.Configuration["Parametros:BD:Cripto"];
 string sSecretKey = builder.Configuration["JWT:SecretKey"]
-                   ?? throw new ArgumentException("Chave Secreta Inválida!");
+				   ?? throw new ArgumentException("Chave Secreta Inválida!");
 string sValidAudience = builder.Configuration["JWT:ValidAudience"];
 string sValidIssuer = builder.Configuration["JWT:ValidIssuer"];
 string sCriptoToken = builder.Configuration["JWT:Cripto"];
@@ -38,52 +39,52 @@ string sLicenca = builder.Configuration["Parametros:Licenca"];
 
 if (sCripto.ToLower().Trim() == "true")
 {
-    var _cri = new Cripto(sChave, sVetor);
-    sServer = _cri.Descriptografar(sServer);
-    sBanco = _cri.Descriptografar(sBanco);
-    sUser = _cri.Descriptografar(sUser);
-    sPass = _cri.Descriptografar(sPass);
+	var _cri = new Cripto(sChave, sVetor);
+	sServer = _cri.Descriptografar(sServer);
+	sBanco = _cri.Descriptografar(sBanco);
+	sUser = _cri.Descriptografar(sUser);
+	sPass = _cri.Descriptografar(sPass);
 }
 
 connSql = connSql
-    .Replace("{parServer}", sServer)
-    .Replace("{parData}", sBanco)
-    .Replace("{parUser}", sUser)
-    .Replace("{parPass}", sPass);
+	.Replace("{parServer}", sServer)
+	.Replace("{parData}", sBanco)
+	.Replace("{parUser}", sUser)
+	.Replace("{parPass}", sPass);
 
 if (sCriptoToken.ToLower().Trim() == "true")
 {
-    var _cri = new Cripto(sChave, sVetor);
-    sSecretKey = _cri.Descriptografar(sSecretKey);
+	var _cri = new Cripto(sChave, sVetor);
+	sSecretKey = _cri.Descriptografar(sSecretKey);
 }
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApiContext>()
-    .AddDefaultTokenProviders();
+	.AddEntityFrameworkStores<ApiContext>()
+	.AddDefaultTokenProviders();
 
 builder.Services.AddDbContext<ApiContext>(options =>
-    options.UseSqlServer(connSql));
+	options.UseSqlServer(connSql));
 
 // Add services to the container.
 builder.Services.AddControllers(options =>
 {
-    options.Filters.Add(typeof(ApiExceptionFilter));
-    options.Filters.Add(typeof(PermissaoFilter)); 
-} )
+	options.Filters.Add(typeof(ApiExceptionFilter));
+	options.Filters.Add(typeof(PermissaoFilter));
+})
 .AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+	options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .WithExposedHeaders("x-Paginacao");
-    });
+	options.AddDefaultPolicy(policy =>
+	{
+		policy.AllowAnyOrigin()
+			  .AllowAnyHeader()
+			  .AllowAnyMethod()
+			  .WithExposedHeaders("x-Paginacao");
+	});
 });
 
 //builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -95,55 +96,55 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Exata API", Version = "v1" });
+	c.SwaggerDoc("v1", new OpenApiInfo { Title = "Exata API", Version = "v1" });
 
-    c.IncludeXmlComments($@"{AppDomain.CurrentDomain.BaseDirectory}\Exata.API.xml");
+	c.IncludeXmlComments($@"{AppDomain.CurrentDomain.BaseDirectory}\Exata.API.xml");
 
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Bearer JWT ",
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                          new OpenApiSecurityScheme
-                          {
-                              Reference = new OpenApiReference
-                              {
-                                  Type = ReferenceType.SecurityScheme,
-                                  Id = "Bearer"
-                              }
-                          },
-                         new string[] {}
-                    }
-                });
+	c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+	{
+		Name = "Authorization",
+		Type = SecuritySchemeType.ApiKey,
+		Scheme = "Bearer",
+		BearerFormat = "JWT",
+		In = ParameterLocation.Header,
+		Description = "Bearer JWT ",
+	});
+	c.AddSecurityRequirement(new OpenApiSecurityRequirement
+				{
+					{
+						  new OpenApiSecurityScheme
+						  {
+							  Reference = new OpenApiReference
+							  {
+								  Type = ReferenceType.SecurityScheme,
+								  Id = "Bearer"
+							  }
+						  },
+						 new string[] {}
+					}
+				});
 });
 
 //builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
-    options.SaveToken = true;
-    options.RequireHttpsMetadata = false;
-    options.TokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ClockSkew = TimeSpan.Zero,
-        ValidAudience = sValidAudience,
-        ValidIssuer = sValidIssuer,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(sSecretKey))
-    };
+	options.SaveToken = true;
+	options.RequireHttpsMetadata = false;
+	options.TokenValidationParameters = new TokenValidationParameters()
+	{
+		ValidateIssuer = true,
+		ValidateAudience = true,
+		ValidateLifetime = true,
+		ValidateIssuerSigningKey = true,
+		ClockSkew = TimeSpan.Zero,
+		ValidAudience = sValidAudience,
+		ValidIssuer = sValidIssuer,
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(sSecretKey))
+	};
 });
 
 builder.Services.AddScoped<IBlobStorage, BlobStorage>();
@@ -164,16 +165,17 @@ builder.Services.AddScoped<IEmpresaCliente, EmpresaClienteRepository>();
 builder.Services.AddScoped<ILogRequisicao, LogRequisicoesRepository>();
 builder.Services.AddScoped<IUsuario, UsuarioRepository>();
 builder.Services.AddScoped<IUpload, UploadRepository>();
+builder.Services.AddScoped<IDashboard, DashboardRepository>();
 
 builder.Services.AddScoped<IVariaveisAmbiente>(sp => new VariaveisAmbiente(
-    sSecretKey,
-    sValidAudience,
-    sValidIssuer,
-    sTokenValidityInMinutes,
-    sRefreshTokenValidityInMinutes,
-    sUsuarioADM,
-    sLogarRequisicoes,
-    sLicenca));
+	sSecretKey,
+	sValidAudience,
+	sValidIssuer,
+	sTokenValidityInMinutes,
+	sRefreshTokenValidityInMinutes,
+	sUsuarioADM,
+	sLogarRequisicoes,
+	sLicenca));
 
 builder.Services.Configure<SmtpSettingsDTO>(builder.Configuration.GetSection("SmtpConfiguration"));
 
@@ -186,10 +188,11 @@ await dbContext.Database.MigrateAsync();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(s => {
-        s.DocumentTitle = app.Environment.EnvironmentName.ToString() + " - API Exata";
-    });
+	app.UseSwagger();
+	app.UseSwaggerUI(s =>
+	{
+		s.DocumentTitle = app.Environment.EnvironmentName.ToString() + " - API Exata";
+	});
 }
 
 app.UseCors();
