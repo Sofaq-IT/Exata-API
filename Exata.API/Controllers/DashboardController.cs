@@ -32,6 +32,16 @@ public class DashboardController : ControllerBase
 		_funcoes = funcoes;
 	}
 
+	[HttpPost]
+	public async Task<ActionResult<DashboardDTO>> Dashboard([FromBody] DashboardFilter filterDashboard)
+	{
+		var dashboard = await _uof.Dashboard.GetDashboard(filterDashboard);
+
+		await _uof.Commit();
+
+		return Ok(dashboard);
+	}
+
 	[HttpPost, Route("GetFazendas")]
 	public async Task<ActionResult<List<FazendaDTO>>> GetFazendas([FromBody] DashboardFilter filterDashboard)
 	{

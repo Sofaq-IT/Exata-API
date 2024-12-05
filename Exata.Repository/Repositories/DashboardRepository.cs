@@ -1,4 +1,6 @@
-﻿using Exata.Domain.DTO;
+﻿using System.Reflection;
+
+using Exata.Domain.DTO;
 using Exata.Domain.Entities;
 using Exata.Domain.Filters;
 using Exata.Domain.Interfaces;
@@ -39,11 +41,6 @@ public class DashboardRepository : IDashboard
 			return anos.Select(s => new AnoDTO() { Nome = s }).ToList();
 		else
 			return new List<AnoDTO>();
-	}
-
-	public Task<DashboardDTO> GetDashboard(DashboardFilter filter)
-	{
-		throw new NotImplementedException();
 	}
 
 	public async Task<List<FazendaDTO>> GetFazendas(DashboardFilter filter)
@@ -110,5 +107,123 @@ public class DashboardRepository : IDashboard
 			return talhoes.Select(s => new TalhaoDTO() { Nome = s }).ToList();
 		else
 			return new List<TalhaoDTO>();
+	}
+
+	public async Task<DashboardDTO> GetDashboard(DashboardFilter filter)
+	{
+		var dados = _ctx.AmostraResultado.Include("Amostra").Where(x => x.Amostra.ClienteId == filter.ClienteId &&
+																	x.TipoInformacao == "R" &&
+																	filter.Fazendas.Contains(x.Fazenda)).AsNoTracking();
+
+		if (filter.Talhoes.Count > 0)
+			dados = dados.Where(x => filter.Talhoes.Contains(x.Talhao));
+
+		if (filter.Glebas.Count > 0)
+			dados = dados.Where(x => filter.Glebas.Contains(x.Gleba));
+
+		if (filter.Pontos.Count > 0)
+			dados = dados.Where(x => filter.Pontos.Contains(x.PontoColeta));
+
+		if (filter.Profundidades.Count > 0)
+			dados = dados.Where(x => filter.Talhoes.Contains(x.Profundidade));
+
+		if (!string.IsNullOrEmpty(filter.Ano))
+			dados = dados.Where(x => x.Amostra.DataCadastro.Year.ToString() == filter.Ano);
+
+		var resultados = await dados.ToListAsync();
+
+		var fazendas = resultados.Select(x => x.Fazenda).Distinct().ToList();
+
+		var dashboard = new DashboardDTO();
+
+		foreach (var faz in fazendas)
+		{
+			var fazendaDto = new FazendaDTO();
+			fazendaDto.Nome = faz;
+
+			var talhoes = resultados.Where(x => x.Fazenda == faz).Select(x => x.Talhao).Distinct().ToList();
+
+			foreach (var talhao in talhoes)
+			{
+				var talhaoDto = new TalhaoDTO();
+				talhaoDto.Nome = talhao;
+
+				var glebas = resultados.Where(x => x.Fazenda == faz && x.Talhao == talhao).Select(x => x.Gleba).Distinct().ToList();
+
+				foreach (var gleba in glebas)
+				{
+					var glebaDto = new GlebaDTO();
+					glebaDto.Nome = gleba;
+
+					var pontos = resultados.Where(x => x.Fazenda == faz && x.Talhao == talhao && x.Gleba == gleba).Select(x => x.PontoColeta).Distinct().ToList();
+
+					foreach (var ponto in pontos)
+					{
+						var pontoDto = new PontoDTO();
+						pontoDto.Nome = ponto;
+
+						var profundidades = resultados.Where(x => x.Fazenda == faz && x.Talhao == talhao && x.Gleba == gleba && x.PontoColeta == ponto).Select(x => x.Profundidade).Distinct().ToList();
+
+						foreach (var profundidade in profundidades)
+						{
+							var profundidadeDto = new ProfundidadeDTO();
+							profundidadeDto.Nome = profundidade;
+
+							var anos = resultados.Where(x => x.Fazenda == faz && x.Talhao == talhao && x.Gleba == gleba && x.PontoColeta == ponto && x.Profundidade == profundidade).Select(x => x.Amostra.DataCadastro.Year).Distinct().ToList();
+
+
+							foreach (var ano in anos)
+							{
+								var anoDto = new AnoDTO();
+								anoDto.Nome = ano;
+
+
+								var resultado = resultados.Where(x => x.Fazenda == faz
+								&& x.Talhao == talhao
+								&& x.Gleba == gleba
+								&& x.PontoColeta == ponto
+								&& x.Profundidade == profundidade
+								&& x.Amostra.DataCadastro.Year == ano).ToList();
+
+								decimal soma = 0;
+
+								foreach (var res in resultado)
+								{
+									var property = res.GetType().GetProperty(filter.Elemento, BindingFlags.Public | BindingFlags.Instance);
+
+									if (property != null)
+									{
+										var valor = property.GetValue(res);
+
+										if (decimal.TryParse(valor.ToString().Replace(".", ","), out decimal result))
+											soma += result;
+									}
+
+
+								}
+								anoDto.Valor = soma;
+
+
+								profundidadeDto.Anos.Add(anoDto);
+							}
+
+							pontoDto.Profundidades.Add(profundidadeDto);
+						}
+
+						glebaDto.Pontos.Add(pontoDto);
+					}
+
+					talhaoDto.Glebas.Add(glebaDto);
+
+				}
+
+				fazendaDto.Talhoes.Add(talhaoDto);
+			}
+
+			dashboard.Fazendas.Add(fazendaDto);
+		}
+
+		return dashboard;
+
 	}
 }
