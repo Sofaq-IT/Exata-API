@@ -8,6 +8,9 @@ using Exata.Domain.Entities;
 using Exata.Domain.Interfaces;
 using Exata.Domain.Paginacao;
 using Exata.Repository.Context;
+using System.Net;
+using Exata.Helpers.Interfaces;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace Exata.Repository.Repositories;
 
@@ -16,14 +19,17 @@ public class UsuarioRepository : IUsuario
     private readonly ApiContext _ctx;
     private readonly IHttpContextAccessor _httpContext;
     private readonly ICampo _campo;
+    private readonly IEmail _email;
 
     public UsuarioRepository(ApiContext context,
                              IHttpContextAccessor httpContextAccessor,
-                             ICampo campo)
+                             ICampo campo,
+                             IEmail email)
     {
         _ctx = context;
         _httpContext = httpContextAccessor;
         _campo = campo;
+        _email = email;
     }
 
     public async Task<ApplicationUser> Abrir(string id)
@@ -50,7 +56,7 @@ public class UsuarioRepository : IUsuario
 
         if (paginacao.Ativos != null)
             iUsuarios = iUsuarios.Where(x => x.Ativo == paginacao.Ativos);
-        
+
         if (!string.IsNullOrEmpty(paginacao.PesquisarCampo) && !string.IsNullOrEmpty(paginacao.PesquisarValor))
         {
             if (!_campo.ExistePesquisa(tabela, paginacao.PesquisarCampo))
@@ -154,5 +160,29 @@ public class UsuarioRepository : IUsuario
     public async Task<ApplicationUser> VerificarCodigo(VerificacaoCodigoDTO verificacaoCodigo)
     {
         return await _ctx.Users.Where(x => x.Email == verificacaoCodigo.Email && x.CodigoVerificacaoEsqueciMinhaSenha == verificacaoCodigo.Codigo).SingleOrDefaultAsync();
+    }
+
+    public void EnviarEmailNovoUsuario(string nome, string login, string email, string senha)
+    {
+        var webRequest = WebRequest.Create(@"https://pontualmainstorage.blob.core.windows.net/exata/novo-usuario.html");
+
+        using (var response = webRequest.GetResponse())
+        using (var content = response.GetResponseStream())
+        using (var reader = new StreamReader(content))
+        {
+            var body = reader.ReadToEnd();
+
+            body = body.Replace("{{login}}", login);
+            body = body.Replace("{{nome}}", nome);
+            body = body.Replace("{{senha}}", senha);
+
+            _email.Enviar(new EmailDTO()
+            {
+                Assunto = "PLATAFORMA EXATA - DADOS DE ACESSO",
+                CorpoEmail = body,
+                Destinatarios = [email],
+                Html = true
+            });
+        }
     }
 }

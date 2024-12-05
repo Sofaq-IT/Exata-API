@@ -84,7 +84,9 @@ public class ClienteController : ControllerBase
             ClienteID = clienteNovo.ClienteID
         };
 
-        var result = await _userManager.CreateAsync(userCliente, Helpers.Funcoes.GenerateRandomString(10));
+        var senha = Helpers.Funcoes.GenerateRandomString(10);
+
+        var result = await _userManager.CreateAsync(userCliente, senha);
 
         if (!result.Succeeded)
         {
@@ -93,13 +95,15 @@ public class ClienteController : ControllerBase
 
         await _uof.Commit();
 
+        _uof.Usuario.EnviarEmailNovoUsuario(user.Nome, user.UserName, user.Email, senha);
+
         return Ok(clienteNovo);
     }
 
     /// <summary>
     /// Alterar o Cliente
     /// </summary>
-    /// <param name="c">Objeto Cliente</param>
+    /// <param name="cliente">Objeto Cliente</param>
     /// <returns>O objeto alterado.</returns>
     [HttpPut]
     public async Task<ActionResult<Cliente>> Put([FromBody] Cliente cliente)
