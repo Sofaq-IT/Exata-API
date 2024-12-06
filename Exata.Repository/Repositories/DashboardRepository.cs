@@ -111,24 +111,7 @@ public class DashboardRepository : IDashboard
 
 	public async Task<DashboardDTO> GetDashboard(DashboardFilter filter)
 	{
-		var dados = _ctx.AmostraResultado.Include("Amostra").Where(x => x.Amostra.ClienteId == filter.ClienteId &&
-																	x.TipoInformacao == "R" &&
-																	filter.Fazendas.Contains(x.Fazenda)).AsNoTracking();
-
-		if (filter.Talhoes.Count > 0)
-			dados = dados.Where(x => filter.Talhoes.Contains(x.Talhao));
-
-		if (filter.Glebas.Count > 0)
-			dados = dados.Where(x => filter.Glebas.Contains(x.Gleba));
-
-		if (filter.Pontos.Count > 0)
-			dados = dados.Where(x => filter.Pontos.Contains(x.PontoColeta));
-
-		if (filter.Profundidades.Count > 0)
-			dados = dados.Where(x => filter.Talhoes.Contains(x.Profundidade));
-
-		if (!string.IsNullOrEmpty(filter.Ano))
-			dados = dados.Where(x => x.Amostra.DataCadastro.Year.ToString() == filter.Ano);
+		IQueryable<AmostraResultado> dados = FiltrarDadosDashboard(filter);
 
 		var resultados = await dados.ToListAsync();
 
@@ -174,6 +157,7 @@ public class DashboardRepository : IDashboard
 
 							foreach (var ano in anos)
 							{
+								var count = 0;
 								var anoDto = new AnoDTO();
 								anoDto.Nome = ano;
 
@@ -196,13 +180,19 @@ public class DashboardRepository : IDashboard
 										var valor = property.GetValue(res);
 
 										if (decimal.TryParse(valor.ToString().Replace(".", ","), out decimal result))
+										{
+											count++;
 											soma += result;
+										}
+
 									}
 
 
 								}
-								anoDto.Valor = soma;
+								if (count == 0)
+									count++;
 
+								anoDto.Valor = soma / count;
 
 								profundidadeDto.Anos.Add(anoDto);
 							}
@@ -225,5 +215,83 @@ public class DashboardRepository : IDashboard
 
 		return dashboard;
 
+	}
+
+	public async Task<RadarDTO> GetRadar(DashboardFilter filter)
+	{
+		IQueryable<AmostraResultado> dados = FiltrarDadosDashboard(filter);
+		var resultados = await dados.ToListAsync();
+
+		var radarDto = new RadarDTO();
+		var valuesList = new List<decimal>();
+
+		var properties = typeof(RadarDTO).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+		foreach (var prop in properties)
+		{
+			decimal soma = 0;
+			var count = 0;
+			foreach (var amostra in resultados)
+			{
+				PropertyInfo amostraProperty = typeof(AmostraResultado).GetProperty(prop.Name, BindingFlags.Public | BindingFlags.Instance);
+				var valor = amostraProperty.GetValue(amostra);
+
+				if (valor != null && decimal.TryParse(valor.ToString().Replace(".", ","), out decimal result))
+				{
+					count++;
+					soma += result;
+				}
+
+
+			}
+
+			if (count == 0)
+				count++;
+
+			prop.SetValue(radarDto, soma / count);
+			valuesList.Add(soma / count);
+
+		}
+
+		//VERIFICA VALORES MINIMOS E MAXIMOS VALORES
+		var min = valuesList.Min();
+		var max = valuesList.Max();
+
+		//NORMALIZA DADOS
+		if (max > 0)
+		{
+			foreach (var prop in properties)
+			{
+				var valorAtual = decimal.Parse(prop.GetValue(radarDto).ToString());
+				var novoValor = (valorAtual - min) / (max - min);
+
+				prop.SetValue(radarDto, novoValor);
+			}
+		}
+
+		return radarDto;
+	}
+
+	private IQueryable<AmostraResultado> FiltrarDadosDashboard(DashboardFilter filter)
+	{
+		var dados = _ctx.AmostraResultado.Include("Amostra").Where(x => x.Amostra.ClienteId == filter.ClienteId &&
+																	x.TipoInformacao == "R" &&
+																	filter.Fazendas.Contains(x.Fazenda)).AsNoTracking();
+
+		if (filter.Talhoes.Count > 0)
+			dados = dados.Where(x => filter.Talhoes.Contains(x.Talhao));
+
+		if (filter.Glebas.Count > 0)
+			dados = dados.Where(x => filter.Glebas.Contains(x.Gleba));
+
+		if (filter.Pontos.Count > 0)
+			dados = dados.Where(x => filter.Pontos.Contains(x.PontoColeta));
+
+		if (filter.Profundidades.Count > 0)
+			dados = dados.Where(x => filter.Profundidades.Contains(x.Profundidade));
+
+		if (!string.IsNullOrEmpty(filter.Ano))
+			dados = dados.Where(x => x.Amostra.DataCadastro.Year.ToString() == filter.Ano);
+		return dados;
 	}
 }
