@@ -111,24 +111,7 @@ public class DashboardRepository : IDashboard
 
 	public async Task<DashboardDTO> GetDashboard(DashboardFilter filter)
 	{
-		var dados = _ctx.AmostraResultado.Include("Amostra").Where(x => x.Amostra.ClienteId == filter.ClienteId &&
-																	x.TipoInformacao == "R" &&
-																	filter.Fazendas.Contains(x.Fazenda)).AsNoTracking();
-
-		if (filter.Talhoes.Count > 0)
-			dados = dados.Where(x => filter.Talhoes.Contains(x.Talhao));
-
-		if (filter.Glebas.Count > 0)
-			dados = dados.Where(x => filter.Glebas.Contains(x.Gleba));
-
-		if (filter.Pontos.Count > 0)
-			dados = dados.Where(x => filter.Pontos.Contains(x.PontoColeta));
-
-		if (filter.Profundidades.Count > 0)
-			dados = dados.Where(x => filter.Talhoes.Contains(x.Profundidade));
-
-		if (!string.IsNullOrEmpty(filter.Ano))
-			dados = dados.Where(x => x.Amostra.DataCadastro.Year.ToString() == filter.Ano);
+		IQueryable<AmostraResultado> dados = FiltrarDadosDashboard(filter);
 
 		var resultados = await dados.ToListAsync();
 
@@ -225,5 +208,57 @@ public class DashboardRepository : IDashboard
 
 		return dashboard;
 
+	}
+
+	public async Task<RadarDTO> GetRadar(DashboardFilter filter)
+	{
+		IQueryable<AmostraResultado> dados = FiltrarDadosDashboard(filter);
+		var resultados = await dados.ToListAsync();
+
+		var radarDto = new RadarDTO();
+
+		var properties = typeof(RadarDTO).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+		foreach (var prop in properties)
+		{
+			decimal soma = 0;
+			foreach (var amostra in resultados)
+			{
+				PropertyInfo amostraProperty = typeof(AmostraResultado).GetProperty(prop.Name, BindingFlags.Public | BindingFlags.Instance);
+				var valor = amostraProperty.GetValue(amostra);
+
+				if (valor != null && decimal.TryParse(valor.ToString().Replace(".", ","), out decimal result))
+					soma += result;
+
+			}
+
+			prop.SetValue(radarDto, soma);
+
+		}
+
+		return radarDto;
+	}
+
+	private IQueryable<AmostraResultado> FiltrarDadosDashboard(DashboardFilter filter)
+	{
+		var dados = _ctx.AmostraResultado.Include("Amostra").Where(x => x.Amostra.ClienteId == filter.ClienteId &&
+																	x.TipoInformacao == "R" &&
+																	filter.Fazendas.Contains(x.Fazenda)).AsNoTracking();
+
+		if (filter.Talhoes.Count > 0)
+			dados = dados.Where(x => filter.Talhoes.Contains(x.Talhao));
+
+		if (filter.Glebas.Count > 0)
+			dados = dados.Where(x => filter.Glebas.Contains(x.Gleba));
+
+		if (filter.Pontos.Count > 0)
+			dados = dados.Where(x => filter.Pontos.Contains(x.PontoColeta));
+
+		if (filter.Profundidades.Count > 0)
+			dados = dados.Where(x => filter.Profundidades.Contains(x.Profundidade));
+
+		if (!string.IsNullOrEmpty(filter.Ano))
+			dados = dados.Where(x => x.Amostra.DataCadastro.Year.ToString() == filter.Ano);
+		return dados;
 	}
 }

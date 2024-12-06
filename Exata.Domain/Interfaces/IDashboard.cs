@@ -6,6 +6,7 @@ namespace Exata.Domain.Interfaces
 	public interface IDashboard
 	{
 		Task<DashboardDTO> GetDashboard(DashboardFilter filter);
+		Task<RadarDTO> GetRadar(DashboardFilter filter);
 		Task<List<FazendaDTO>> GetFazendas(DashboardFilter filter);
 		Task<List<TalhaoDTO>> GetTalhoes(DashboardFilter filter);
 		Task<List<GlebaDTO>> GetGlebas(DashboardFilter filter);

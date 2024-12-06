@@ -42,6 +42,16 @@ public class DashboardController : ControllerBase
 		return Ok(dashboard);
 	}
 
+	[HttpPost, Route("GetRadar")]
+	public async Task<ActionResult<List<RadarDTO>>> GetRadar([FromBody] DashboardFilter filterDashboard)
+	{
+		var radar = await _uof.Dashboard.GetRadar(filterDashboard);
+
+		await _uof.Commit();
+
+		return Ok(radar);
+	}
+
 	[HttpPost, Route("GetFazendas")]
 	public async Task<ActionResult<List<FazendaDTO>>> GetFazendas([FromBody] DashboardFilter filterDashboard)
 	{
