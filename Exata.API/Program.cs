@@ -166,6 +166,7 @@ builder.Services.AddScoped<ILogRequisicao, LogRequisicoesRepository>();
 builder.Services.AddScoped<IUsuario, UsuarioRepository>();
 builder.Services.AddScoped<IUpload, UploadRepository>();
 builder.Services.AddScoped<IDashboard, DashboardRepository>();
+builder.Services.AddScoped<IRelatorio, RelatorioRepository>();
 
 builder.Services.AddScoped<IVariaveisAmbiente>(sp => new VariaveisAmbiente(
 	sSecretKey,

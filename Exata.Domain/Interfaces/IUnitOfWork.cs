@@ -25,6 +25,7 @@ public interface IUnitOfWork
 
 	IUsuario Usuario { get; }
 	IDashboard Dashboard { get; }
+	IRelatorio Relatorio { get; }
 
 	Task Commit();
 }
