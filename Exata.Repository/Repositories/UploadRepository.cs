@@ -77,7 +77,7 @@ public class UploadRepository : IUpload
             var uploads = await (from u in _ctx.Upload
                                  join a in _ctx.Amostra on u.AmostraId equals a.AmostraId
                                  where a.ClienteId == user.ClienteID && u.TipoUpload == TipoUploadEnum.Resultado
-                                 select a).AsNoTracking()
+                                 select u).AsNoTracking()
                                           .Include("Amostra.Cliente")
                                           .OrderByDescending(x => x.DataCadastro)
                                           .ToListAsync();
