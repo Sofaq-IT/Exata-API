@@ -170,4 +170,16 @@ public class EmpresaController : ControllerBase
         return Ok(await _uof.Campo.Campos("Empresa"));
     }
 
+    /// <summary>
+    /// Retorna a Lista de Empresas
+    /// </summary>
+    /// <returns>Lista solicitada</returns>
+    [HttpGet, Route("ListarTodos")]
+    public async Task<IActionResult> ListarTodos()
+    {
+        List<Empresa> empresas = await _uof.Empresa.Listar();
+
+        return Ok(empresas);
+    }
+
 }
