@@ -102,7 +102,7 @@ public class UsuarioController : ControllerBase
     [HttpPut]
     public async Task<ActionResult<UsuarioDTO>> Put([FromBody] UsuarioDTO usuario)
     {
-        var user = await _userManager.FindByNameAsync(usuario.UserName);
+        var user = await _userManager.FindByIdAsync(usuario.Id);
         if (user == null)
             return NotFound(_error.NotFound("Usuário não encontrado"));
 
@@ -112,6 +112,7 @@ public class UsuarioController : ControllerBase
         user.Nome = usuario.Nome;
         user.Ativo = usuario.Ativo;
         user.PhoneNumber = usuario.PhoneNumber;
+        user.UserName = usuario.UserName;
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)
