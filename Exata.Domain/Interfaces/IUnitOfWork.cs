@@ -2,28 +2,30 @@
 
 public interface IUnitOfWork
 {
-    IAmostra Amostra { get; }
+	IAmostra Amostra { get; }
 
-    IAmostraResultado AmostraResultado { get; }
-    ICampo Campo { get; }
+	IAmostraResultado AmostraResultado { get; }
+	ICampo Campo { get; }
 
-    ICliente Cliente { get; }
+	ICliente Cliente { get; }
 
-    IControllerAction ControllerAction { get; }
+	IControllerAction ControllerAction { get; }
 
-    IEmpresa Empresa { get; }
+	IEmpresa Empresa { get; }
 
-    IEmpresaCliente EmpresaCliente { get; }
+	IEmpresaCliente EmpresaCliente { get; }
 
-    ILogRequisicao LogRequisicao { get; }
+	ILogRequisicao LogRequisicao { get; }
 
-    IPerfil Perfil { get; }
+	IPerfil Perfil { get; }
 
-    IPerfilControllerAction PerfilControllerAction { get; }
+	IPerfilControllerAction PerfilControllerAction { get; }
 
-    IUpload Upload { get; }
+	IUpload Upload { get; }
 
-    IUsuario Usuario { get; }
+	IUsuario Usuario { get; }
+	IDashboard Dashboard { get; }
+	IRelatorio Relatorio { get; }
 
-    Task Commit();
+	Task Commit();
 }

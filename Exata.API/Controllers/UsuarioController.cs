@@ -7,9 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using Exata.Domain.Paginacao;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using System.Net;
 
 namespace Exata.API.Controllers;
 
@@ -92,7 +89,7 @@ public class UsuarioController : ControllerBase
 
         await _uof.Commit();
 
-        EnviarEmailNovoUsuario(usuario.UserName, usuario.Email, usuario.Senha);
+        _uof.Usuario.EnviarEmailNovoUsuario(usuario.Nome, usuario.UserName, usuario.Email, usuario.Senha);
 
         return Ok(usuario);
     }
@@ -105,7 +102,7 @@ public class UsuarioController : ControllerBase
     [HttpPut]
     public async Task<ActionResult<UsuarioDTO>> Put([FromBody] UsuarioDTO usuario)
     {
-        var user = await _userManager.FindByNameAsync(usuario.UserName);
+        var user = await _userManager.FindByIdAsync(usuario.Id);
         if (user == null)
             return NotFound(_error.NotFound("Usuário não encontrado"));
 
@@ -115,6 +112,7 @@ public class UsuarioController : ControllerBase
         user.Nome = usuario.Nome;
         user.Ativo = usuario.Ativo;
         user.PhoneNumber = usuario.PhoneNumber;
+        user.UserName = usuario.UserName;
 
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)
@@ -358,29 +356,5 @@ public class UsuarioController : ControllerBase
 
         await _uof.Commit();
         return Ok(usuarioAvatarNovo);
-    }
-
-    private void EnviarEmailNovoUsuario(string login, string email, string senha)
-    {
-        var webRequest = WebRequest.Create(@"https://pontualmainstorage.blob.core.windows.net/exata/novo-usuario.html");
-
-        using (var response = webRequest.GetResponse())
-        using (var content = response.GetResponseStream())
-        using (var reader = new StreamReader(content))
-        {
-            var body = reader.ReadToEnd();
-
-            body = body.Replace("{{login}}", login);
-            body = body.Replace("{{email}}", email);
-            body = body.Replace("{{senha}}", senha);
-
-            _email.Enviar(new EmailDTO()
-            {
-                Assunto = "PLATAFORMA EXATA - DADOS DE ACESSO",
-                CorpoEmail = body,
-                Destinatarios = [email],
-                Html = true
-            });
-        }
     }
 }

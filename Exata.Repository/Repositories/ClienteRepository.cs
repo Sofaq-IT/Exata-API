@@ -138,6 +138,11 @@ public class ClienteRepository : ICliente
                         where ec.EmpresaID == user.EmpresaID
                         select c;
 
+        if (user != null && user.ClienteID != null)
+            iClientes = from c in iClientes
+                        where c.ClienteID == user.ClienteID
+                        select c;
+
         return await iClientes
             .Where(x => x.Ativo == true)
             .OrderBy(x => x.NomeRazaoSocial)

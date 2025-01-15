@@ -122,8 +122,18 @@ public class EmpresaRepository : IEmpresa
 
     public async Task<List<Empresa>> Listar()
     {
-        return await _ctx.Empresa
-            .AsNoTracking()
+        IQueryable<Empresa> iEmpresas = _ctx.Empresa.AsNoTracking();
+
+        var userID = await _usuario.UserID();
+
+        var user = _ctx.Users.Where(x => x.Id == userID).FirstOrDefault();
+
+        if (user != null && user.EmpresaID != null)
+            iEmpresas = from e in iEmpresas
+                        where e.EmpresaID == user.EmpresaID
+                        select e;
+
+        return await iEmpresas
             .Where(x => x.Ativo == true)
             .OrderBy(x => x.NomeRazaoSocial)
             .ToListAsync();

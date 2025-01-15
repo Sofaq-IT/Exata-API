@@ -71,7 +71,9 @@ public class EmpresaController : ControllerBase
             EmpresaID = empresaNova.EmpresaID
         };
 
-        var result = await _userManager.CreateAsync(user, Helpers.Funcoes.GenerateRandomString(10));
+        var senha = Helpers.Funcoes.GenerateRandomString(10);
+
+        var result = await _userManager.CreateAsync(user, senha);
 
         if (!result.Succeeded)
         {
@@ -79,7 +81,9 @@ public class EmpresaController : ControllerBase
         }
 
         await _uof.Commit();
-        
+
+        _uof.Usuario.EnviarEmailNovoUsuario(user.Nome, user.UserName, user.Email, senha);
+
         return Ok(empresaNova);
     }
 
@@ -164,6 +168,18 @@ public class EmpresaController : ControllerBase
     {
         await _uof.Commit();
         return Ok(await _uof.Campo.Campos("Empresa"));
+    }
+
+    /// <summary>
+    /// Retorna a Lista de Empresas
+    /// </summary>
+    /// <returns>Lista solicitada</returns>
+    [HttpGet, Route("ListarTodos")]
+    public async Task<IActionResult> ListarTodos()
+    {
+        List<Empresa> empresas = await _uof.Empresa.Listar();
+
+        return Ok(empresas);
     }
 
 }

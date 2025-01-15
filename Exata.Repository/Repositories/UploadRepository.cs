@@ -45,40 +45,7 @@ public class UploadRepository : IUpload
 
         IQueryable<Upload> iUploads = _ctx.Upload.AsNoTracking();
 
-        //if (!string.IsNullOrEmpty(paginacao.PesquisarCampo) && !string.IsNullOrEmpty(paginacao.PesquisarValor))
-        //{
-        //    if (!_campo.ExistePesquisa(tabela, paginacao.PesquisarCampo))
-        //        throw new Exception($"Campo ({paginacao.PesquisarCampo}) não pode ser pesquisado!");
 
-        //    switch (paginacao.PesquisarCampo)
-        //    {
-        //        case "CpfCnpj":
-        //            iEmpresas = iEmpresas.Where(x => x.CpfCnpj.Contains(paginacao.PesquisarValor));
-        //            break;
-
-        //        case "NomeRazaoSocial":
-        //            iEmpresas = iEmpresas.Where(x => x.NomeRazaoSocial.Contains(paginacao.PesquisarValor));
-        //            break;
-
-        //        case "ApelidoNomeFantasia":
-        //            iEmpresas = iEmpresas.Where(x => x.ApelidoNomeFantasia.Contains(paginacao.PesquisarValor));
-        //            break;
-
-        //        default:
-        //            throw new Exception($"Campo ({paginacao.PesquisarCampo}) não pode ser pesquisado!");
-        //    }
-        //}
-
-        //if (!string.IsNullOrEmpty(paginacao.OrderCampo))
-        //{
-        //    if (!_campo.ExisteOrdenacao(tabela, paginacao.OrderCampo))
-        //        throw new Exception($"Campo ({paginacao.OrderCampo}) não pode ser Ordenado!");
-
-        //    if (paginacao.OrderTipoAsc == true)
-        //        iEmpresas = iEmpresas.OrderBy(x => EF.Property<object>(x!, paginacao.OrderCampo));
-        //    else
-        //        iEmpresas = iEmpresas.OrderByDescending(x => EF.Property<object>(x!, paginacao.OrderCampo));
-        //}
 
         uploads = await PagedList<Upload>
            .ToPagedList(
@@ -95,7 +62,7 @@ public class UploadRepository : IUpload
 
         var user = _ctx.Users.Where(x => x.Id == userID).FirstOrDefault();
 
-        if (user.EmpresaID != null)
+        if (user != null && user.EmpresaID != null)
         {
             return await _ctx.Upload
                          .Where(x => x.UserCadastro == user.Id && x.TipoUpload == TipoUploadEnum.Resultado)
@@ -105,12 +72,23 @@ public class UploadRepository : IUpload
                          .ToListAsync();
         }
 
+        if (user != null && user.ClienteID != null)
+        {
+            var uploads = await (from u in _ctx.Upload
+                                 join a in _ctx.Amostra on u.AmostraId equals a.AmostraId
+                                 where a.ClienteId == user.ClienteID && u.TipoUpload == TipoUploadEnum.Resultado
+                                 select u).AsNoTracking()
+                                          .Include("Amostra.Cliente")
+                                          .OrderByDescending(x => x.DataCadastro)
+                                          .ToListAsync();
+        }
+
         return await _ctx.Upload
-            .Where(x => x.TipoUpload == TipoUploadEnum.Resultado)
-            .AsNoTracking()
-            .Include("Amostra.Cliente")
-            .OrderByDescending(x => x.DataCadastro)
-            .ToListAsync();
+                        .Where(x => x.TipoUpload == TipoUploadEnum.Resultado)
+                        .AsNoTracking()
+                        .Include("Amostra.Cliente")
+                        .OrderByDescending(x => x.DataCadastro)
+                        .ToListAsync();
     }
 
     public async Task<Upload> Abrir(int id)
