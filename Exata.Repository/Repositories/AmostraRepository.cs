@@ -46,7 +46,7 @@ public class AmostraRepository : IAmostra
             {
                 var fileInfo = new FileInfo(item.FileName);
 
-                var fileName = string.Format("{0:yyyyMMddHHmmss}", DateTime.Now) + fileInfo.Extension;
+                var fileName = string.Format("{0:yyyyMMddHHmmssfff}", DateTime.Now) + fileInfo.Extension;
 
                 var fullPath = "uploads-realizados/" + fileName;
 
