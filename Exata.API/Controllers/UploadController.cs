@@ -158,6 +158,9 @@ public class UploadController : ControllerBase
         if (upload == null)
             return NotFound("Não localizamos um Upload com o ID informado!");
 
+        if (upload.StatusAtual == StatusUploadEnum.Processado)
+            return Conflict("O upload informado já foi processado.");
+
         try
         {
             var excelData = await _blobStorage.ReadDataTableExcelFileAsync("uploads-realizados/" + upload.NomeArquivoArmazenado);
