@@ -11,5 +11,6 @@ namespace Exata.Domain.Interfaces
         Task<Upload> Atualizar(Upload upload);
         Task<PagedList<Upload>> Listar(PaginacaoDTO paginacao);
         Task<List<Upload>> Listar();
+        Task Excluir(int uploadId);        
     }
 }

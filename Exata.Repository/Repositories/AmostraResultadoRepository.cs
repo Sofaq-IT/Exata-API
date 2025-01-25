@@ -1,6 +1,7 @@
 ﻿using Exata.Domain.Entities;
 using Exata.Domain.Interfaces;
 using Exata.Repository.Context;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
 
 namespace Exata.Repository.Repositories;
@@ -16,6 +17,14 @@ public class AmostraResultadoRepository : IAmostraResultado
         _usuario = usuario;
     }
 
+    public async Task ExcluirTodosPorAmostraId(Guid amostraId)
+    {
+        var resultados = await _ctx.AmostraResultado.Where(x => x.AmostraId == amostraId).ToListAsync();
+
+        if (resultados.Any())
+            _ctx.AmostraResultado.RemoveRange(resultados);
+    }
+
     public async Task<AmostraResultado> Inserir(AmostraResultado amostraResultado)
     {
         amostraResultado.UserCadastro = await _usuario.UserID();
@@ -28,7 +37,7 @@ public class AmostraResultadoRepository : IAmostraResultado
     {
         var userCadastro = await _usuario.UserID();
         bool isFirstRow = true;
-        
+
         foreach (DataRow item in dadosImportados.Rows)
         {
             var amostraResultado = new AmostraResultado()
@@ -93,11 +102,11 @@ public class AmostraResultadoRepository : IAmostraResultado
             {
                 amostraResultado.TipoInformacao = "M";
                 isFirstRow = false;
-            }                
+            }
             else
                 amostraResultado.TipoInformacao = "R";
 
-            _ctx.Add(amostraResultado);            
+            _ctx.Add(amostraResultado);
         }
 
         await _ctx.SaveChangesAsync();
