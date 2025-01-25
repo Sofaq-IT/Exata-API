@@ -73,4 +73,24 @@ public class AmostraRepository : IAmostra
             }
         }
     }
+
+    public async Task Excluir(Guid amostraId)
+    {
+        var amostra = await _ctx.Amostra.FindAsync(amostraId);
+
+        if (amostra != null)
+            _ctx.Amostra.Remove(amostra);
+    }
+
+    public async Task<Amostra> Abrir(Guid amostraID)
+    {
+        return await _ctx.Amostra.FindAsync(amostraID);
+    }
+
+    public async Task ExcluirAnexos(Guid amostraId)
+    {
+        var anexos = await _ctx.Upload.Where(x => x.TipoUpload == TipoUploadEnum.Anexo).ToListAsync();
+
+        _ctx.Upload.RemoveRange(anexos);
+    }
 }
