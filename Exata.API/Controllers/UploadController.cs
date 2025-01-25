@@ -259,31 +259,6 @@ public class UploadController : ControllerBase
         }
     }
 
-    [HttpPost, Route("ImportarAnexos/{uploadID}")]
-    public async Task<IActionResult> ImportarAnexos(int uploadID, [FromForm] IFormFile[] extraAttachments)
-    {
-        try
-        {
-            var upload = await _upload.Abrir(uploadID);
-
-            if (upload == null)
-                return NotFound("Não localizamos um upload com o ID informado");
-
-            if (extraAttachments != null && extraAttachments.Length != 0)
-                await _uof.Amostra.SalvarAnexos(extraAttachments, upload.AmostraId, upload.DataReferencia);
-            else
-                return BadRequest("Não foram enviados anexos extras. Favor verificar.");
-
-            await _uof.Commit();
-
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            return BadRequest("Erro ao realizar upload do arquivo: " + ex.Message);
-        }
-    }
-
     [HttpDelete, Route("{uploadID}")]
     public async Task<IActionResult> ExcluirUpload(int uploadID)
     {
