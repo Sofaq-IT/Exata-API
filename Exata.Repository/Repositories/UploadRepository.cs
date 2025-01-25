@@ -98,4 +98,12 @@ public class UploadRepository : IUpload
             .Where(x => x.UploadID == id)
             .FirstOrDefaultAsync();
     }
+
+    public async Task Excluir(int uploadId)
+    {
+        var upload = await _ctx.Upload.FindAsync(uploadId);
+
+        if (upload != null)
+            _ctx.Upload.Remove(upload);
+    }
 }

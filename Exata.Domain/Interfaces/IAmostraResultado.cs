@@ -7,5 +7,6 @@ namespace Exata.Domain.Interfaces
     {
         Task<AmostraResultado> Inserir(AmostraResultado amostraResultado);
         Task InserirTodos(DataTable dadosImportados, Guid amostraId);
+        Task ExcluirTodosPorAmostraId(Guid amostraId);
     }
 }

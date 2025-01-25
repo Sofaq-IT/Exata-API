@@ -233,7 +233,7 @@ public class UploadController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
-    
+
     [HttpPost, Route("ImportarAnexos/{uploadID}")]
     public async Task<IActionResult> ImportarAnexos(int uploadID, [FromForm] IFormFile[] extraAttachments)
     {
@@ -256,6 +256,31 @@ public class UploadController : ControllerBase
         catch (Exception ex)
         {
             return BadRequest("Erro ao realizar upload do arquivo: " + ex.Message);
+        }
+    }
+
+    [HttpDelete, Route("{uploadID}")]
+    public async Task<IActionResult> ExcluirUpload(int uploadID)
+    {
+        try
+        {
+            var upload = await _upload.Abrir(uploadID);
+
+            if (upload == null)
+                return NotFound("Não localizamos um upload com o ID informado");
+
+            await _uof.AmostraResultado.ExcluirTodosPorAmostraId(upload.AmostraId);
+            await _uof.Amostra.ExcluirAnexos(upload.AmostraId);
+            await _uof.Upload.Excluir(uploadID);
+            await _uof.Amostra.Excluir(upload.AmostraId);
+
+            await _uof.Commit();
+
+            return Ok("O Upload e seus resultados foram removidos com sucesso");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest("Erro ao excluir upload : " + ex.Message);
         }
     }
 
